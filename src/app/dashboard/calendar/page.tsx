@@ -143,6 +143,7 @@ export default function CalendarPage() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
           </div>
         ) : (
+          <>
             {/* Desktop View (Full Grid) */}
             <div className="hidden sm:flex flex-1 flex-col min-h-[600px]">
               <div className="grid grid-cols-7 border-b border-slate-800 bg-slate-950/50">
@@ -260,6 +261,7 @@ export default function CalendarPage() {
                 )}
               </div>
             </div>
+          </>
         )}
       </div>
     </div>
