@@ -364,12 +364,14 @@ export default function NewQuote() {
 
                 <div className="space-y-3">
                   {installments.map((inst, index) => (
-                    <div key={index} className="flex items-center space-x-3 bg-slate-950 p-3 rounded-lg border border-slate-800">
-                      <div className="text-sm font-medium text-slate-400 w-8">
-                        {inst.number}ª
+                    <div key={index} className="grid grid-cols-1 sm:grid-cols-12 gap-3 bg-slate-950 p-4 rounded-lg border border-slate-800 items-end">
+                      <div className="sm:col-span-1 text-sm font-medium text-slate-400 pb-2 sm:pb-0">
+                        {inst.number}ª Parcela
                       </div>
-                      <div className="flex-[1.5]">
-                        <label className="sr-only">Valor</label>
+                      <div className="sm:col-span-5">
+                        <label className="block text-xs font-medium text-slate-500 mb-1 sm:sr-only">
+                          Valor
+                        </label>
                         <div className="relative">
                           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
                             <span className="text-slate-500 sm:text-sm">R$</span>
@@ -379,26 +381,32 @@ export default function NewQuote() {
                             step="0.01"
                             value={inst.value}
                             onChange={(e) => updateInstallment(index, 'value', e.target.value)}
-                            className="block w-full rounded-md border border-slate-700 bg-slate-900 pl-10 pr-3 py-1.5 text-slate-50 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                            className="block w-full rounded-md border border-slate-700 bg-slate-900 pl-9 pr-3 py-2 text-slate-50 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm transition-all"
+                            placeholder="0.00"
                           />
                         </div>
                       </div>
-                      <div className="flex-1">
-                        <label className="sr-only">Data Vencimento</label>
+                      <div className="sm:col-span-5">
+                        <label className="block text-xs font-medium text-slate-500 mb-1 sm:sr-only">
+                          Vencimento
+                        </label>
                         <input
                           type="date"
                           value={inst.dueDate}
                           onChange={(e) => updateInstallment(index, 'dueDate', e.target.value)}
-                          className="block w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-1.5 text-slate-50 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+                          className="block w-full rounded-md border border-slate-700 bg-slate-900 px-3 py-2 text-slate-50 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm transition-all"
                         />
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => removeInstallment(index)}
-                        className="text-slate-500 hover:text-red-400 p-1"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </button>
+                      <div className="sm:col-span-1 flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => removeInstallment(index)}
+                          className="text-slate-500 hover:text-red-400 p-2 rounded-lg hover:bg-red-500/10 transition-colors"
+                          title="Remover parcela"
+                        >
+                          <Trash2 className="h-5 w-5" />
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
