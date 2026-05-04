@@ -276,69 +276,122 @@ export default function FinancePage() {
             <p>Nenhum lançamento encontrado para este mês.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-slate-800">
-              <thead className="bg-slate-950/50">
-                <tr>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Data</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Cliente / Serviço</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Parcela</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Valor</th>
-                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Status</th>
-                  <th scope="col" className="relative px-6 py-3"><span className="sr-only">Ações</span></th>
-                </tr>
-              </thead>
-              <tbody className="bg-slate-900 divide-y divide-slate-800">
-                {monthlyReceivables.map((item, idx) => (
-                  <tr 
-                    key={`${item.type}-${item.id}-${idx}`} 
-                    className="hover:bg-slate-800/50 transition-colors cursor-pointer"
-                    onClick={() => router.push(`/dashboard/quotes/${item.quoteId}`)}
-                  >
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
-                      {format(item.displayDate, "dd/MM/yyyy")}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm font-medium text-slate-50">{item.client}</div>
-                      <div className="text-xs text-slate-500">{item.service}</div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
-                      {item.type === 'installment' ? `${item.number}/${item.totalInstallments}` : 'À vista'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-50">
-                      {formatCurrency(item.value)}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
-                        item.status === "Pago" 
-                        ? "bg-emerald-500/10 text-emerald-400 ring-emerald-500/20" 
-                        : "bg-amber-500/10 text-amber-400 ring-amber-500/20"
-                      }`}>
-                        {item.status === "Pago" ? <CheckCircle className="mr-1 h-3 w-3" /> : <Clock className="mr-1 h-3 w-3" />}
-                        {item.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                      {item.status !== "Pago" && (
-                        <button 
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleMarkAsPaid(item.id, item.type);
-                          }}
-                          className="text-emerald-400 hover:text-emerald-300"
-                        >
-                          Receber
-                        </button>
-                      )}
-                      <Link href={`/dashboard/quotes/${item.quoteId}`} className="text-indigo-400 hover:text-indigo-300">
-                        Ver Orçamento
-                      </Link>
-                    </td>
+          <>
+            {/* Mobile View (Cards) */}
+            <div className="block sm:hidden divide-y divide-slate-800">
+              {monthlyReceivables.map((item, idx) => (
+                <div 
+                  key={`${item.type}-${item.id}-${idx}`} 
+                  className="p-4 hover:bg-slate-800/50 transition-colors cursor-pointer space-y-3"
+                  onClick={() => router.push(`/dashboard/quotes/${item.quoteId}`)}
+                >
+                  <div className="flex justify-between items-start">
+                    <div className="flex-1 min-w-0 pr-4">
+                      <div className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1">
+                        {format(item.displayDate, "dd/MM/yyyy")}
+                      </div>
+                      <h3 className="text-sm font-bold text-slate-50 truncate">{item.client}</h3>
+                      <p className="text-xs text-slate-400 truncate">{item.service}</p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <div className="text-sm font-bold text-indigo-400">{formatCurrency(item.value)}</div>
+                      <div className="text-[10px] text-slate-500 mt-1">
+                        {item.type === 'installment' ? `Parc. ${item.number}/${item.totalInstallments}` : 'À vista'}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-between items-center">
+                    <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-bold ring-1 ring-inset ${
+                      item.status === "Pago" 
+                      ? "bg-emerald-500/10 text-emerald-400 ring-emerald-500/20" 
+                      : "bg-amber-500/10 text-amber-400 ring-amber-500/20"
+                    }`}>
+                      {item.status === "Pago" ? <CheckCircle className="mr-1 h-3 w-3" /> : <Clock className="mr-1 h-3 w-3" />}
+                      {item.status}
+                    </span>
+                    
+                    {item.status !== "Pago" && (
+                      <button 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleMarkAsPaid(item.id, item.type);
+                        }}
+                        className="text-[10px] font-bold text-emerald-400 border border-emerald-500/30 bg-emerald-500/5 px-2 py-1 rounded"
+                      >
+                        Receber
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Desktop View (Table) */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="min-w-full divide-y divide-slate-800">
+                <thead className="bg-slate-950/50">
+                  <tr>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Data</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Cliente / Serviço</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Parcela</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Valor</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Status</th>
+                    <th scope="col" className="relative px-6 py-3"><span className="sr-only">Ações</span></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="bg-slate-900 divide-y divide-slate-800">
+                  {monthlyReceivables.map((item, idx) => (
+                    <tr 
+                      key={`${item.type}-${item.id}-${idx}`} 
+                      className="hover:bg-slate-800/50 transition-colors cursor-pointer"
+                      onClick={() => router.push(`/dashboard/quotes/${item.quoteId}`)}
+                    >
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                        {format(item.displayDate, "dd/MM/yyyy")}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="text-sm font-medium text-slate-50">{item.client}</div>
+                        <div className="text-xs text-slate-500">{item.service}</div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
+                        {item.type === 'installment' ? `${item.number}/${item.totalInstallments}` : 'À vista'}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-50">
+                        {formatCurrency(item.value)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <span className={`inline-flex items-center rounded-full px-2 py-1 text-xs font-medium ring-1 ring-inset ${
+                          item.status === "Pago" 
+                          ? "bg-emerald-500/10 text-emerald-400 ring-emerald-500/20" 
+                          : "bg-amber-500/10 text-amber-400 ring-amber-500/20"
+                        }`}>
+                          {item.status === "Pago" ? <CheckCircle className="mr-1 h-3 w-3" /> : <Clock className="mr-1 h-3 w-3" />}
+                          {item.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                        {item.status !== "Pago" && (
+                          <button 
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleMarkAsPaid(item.id, item.type);
+                            }}
+                            className="text-emerald-400 hover:text-emerald-300"
+                          >
+                            Receber
+                          </button>
+                        )}
+                        <Link href={`/dashboard/quotes/${item.quoteId}`} className="text-indigo-400 hover:text-indigo-300">
+                          Ver Orçamento
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
     </div>
