@@ -138,8 +138,9 @@ export default function QuotesList() {
             )}
           </div>
         ) : (
-        {/* Mobile View (Cards) */}
-        <div className="block sm:hidden divide-y divide-slate-800">
+          <>
+            {/* Mobile View (Cards) */}
+            <div className="block sm:hidden divide-y divide-slate-800">
           {filteredQuotes.map((quote) => (
             <div 
               key={quote.id} 
@@ -264,8 +265,9 @@ export default function QuotesList() {
             </tbody>
           </table>
         </div>
-        )}
-      </div>
-    </div>
+      </>
+    )}
+  </div>
+</div>
   );
 }
