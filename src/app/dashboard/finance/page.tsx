@@ -261,7 +261,7 @@ export default function FinancePage() {
         </div>
       </div>
 
-      <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+      <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800">
         <div className="p-6 border-b border-slate-800">
           <h3 className="text-lg font-medium text-slate-50">Lançamentos do Período</h3>
         </div>

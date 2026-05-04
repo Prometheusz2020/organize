@@ -95,7 +95,7 @@ export default function QuotesList() {
         </div>
       </div>
 
-      <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
+      <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800">
         <div className="p-4 border-b border-slate-800">
           <div className="relative rounded-md max-w-md">
             <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">

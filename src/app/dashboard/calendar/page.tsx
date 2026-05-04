@@ -110,7 +110,7 @@ export default function CalendarPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 h-full flex flex-col">
+    <div className="max-w-7xl mx-auto space-y-6 flex flex-col">
       <div className="sm:flex sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-slate-50 tracking-tight">Calendário de Execuções</h1>
@@ -137,7 +137,7 @@ export default function CalendarPage() {
         </div>
       </div>
 
-      <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden flex-1 flex flex-col">
+      <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800 flex flex-col">
         {loading ? (
           <div className="flex-1 flex items-center justify-center p-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
