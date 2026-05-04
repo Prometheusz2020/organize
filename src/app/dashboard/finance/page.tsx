@@ -14,7 +14,7 @@ import {
 import Link from "next/link";
 import { ptBR } from "date-fns/locale";
 import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from "date-fns";
-import { getQuotes, updateInstallmentAction } from "@/actions";
+import { getQuotes, updateInstallmentAction, updateQuoteStatusAction } from "@/actions";
 
 export default function FinancePage() {
   const [quotes, setQuotes] = useState<any[]>([]);
