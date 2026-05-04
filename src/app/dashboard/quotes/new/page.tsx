@@ -368,7 +368,7 @@ export default function NewQuote() {
                       <div className="text-sm font-medium text-slate-400 w-8">
                         {inst.number}ª
                       </div>
-                      <div className="flex-1">
+                      <div className="flex-[1.5]">
                         <label className="sr-only">Valor</label>
                         <div className="relative">
                           <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
