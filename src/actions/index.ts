@@ -181,8 +181,15 @@ export async function updateQuoteStatusAction(id: string, status: string) {
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
   if (!user) throw new Error("Usuário não encontrado");
 
+  const data: any = { status };
+  if (status === "Pago") {
+    data.paidAt = new Date();
+  } else if (status === "Pendente" || status === "Aprovado") {
+    data.paidAt = null;
+  }
+
   return await prisma.quote.update({
     where: { id, userId: user.id },
-    data: { status }
+    data
   });
 }

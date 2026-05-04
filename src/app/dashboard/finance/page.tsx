@@ -45,21 +45,29 @@ export default function FinancePage() {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1));
   };
 
-  const handleMarkAsPaid = async (installmentId: string) => {
+  const handleMarkAsPaid = async (itemId: string, type: 'installment' | 'quote') => {
     try {
-      await updateInstallmentAction(installmentId, { status: "Pago" });
-      // Update local state to reflect change immediately
-      setQuotes(prevQuotes => 
-        prevQuotes.map(quote => ({
-          ...quote,
-          installments: quote.installments.map((inst: any) => 
-            inst.id === installmentId ? { ...inst, status: "Pago" } : inst
+      if (type === 'installment') {
+        await updateInstallmentAction(itemId, { status: "Pago" });
+        setQuotes(prevQuotes => 
+          prevQuotes.map(quote => ({
+            ...quote,
+            installments: quote.installments.map((inst: any) => 
+              inst.id === itemId ? { ...inst, status: "Pago", paidAt: new Date() } : inst
+            )
+          }))
+        );
+      } else {
+        await updateQuoteStatusAction(itemId, "Pago");
+        setQuotes(prevQuotes => 
+          prevQuotes.map(quote => 
+            quote.id === itemId ? { ...quote, status: "Pago", paidAt: new Date() } : quote
           )
-        }))
-      );
+        );
+      }
     } catch (error) {
-      console.error("Error updating installment:", error);
-      alert("Erro ao atualizar parcela.");
+      console.error("Error updating payment:", error);
+      alert("Erro ao atualizar pagamento.");
     }
   };
 
@@ -113,9 +121,20 @@ export default function FinancePage() {
       });
     } else if (quote.paymentMethod === "À vista" || !quote.installments?.length) {
       const executionDate = parseISO(quote.date);
-      // For simplicity, we'll treat "À vista" as based on execution date for now, 
-      // but ideally it should also have a paidAt if marked as Pago.
-      if (isWithinInterval(executionDate, { start: monthStart, end: monthEnd })) {
+      const paidAtDate = quote.paidAt ? (typeof quote.paidAt === 'string' ? parseISO(quote.paidAt) : quote.paidAt) : null;
+      
+      let isInMonth = false;
+      if (quote.status === "Pago" && paidAtDate) {
+        if (isWithinInterval(paidAtDate, { start: monthStart, end: monthEnd })) {
+          isInMonth = true;
+        }
+      } else if (quote.status === "Aprovado" || quote.status === "Pendente") {
+        if (isWithinInterval(executionDate, { start: monthStart, end: monthEnd })) {
+          isInMonth = true;
+        }
+      }
+
+      if (isInMonth) {
         monthlyReceivables.push({
           id: quote.id,
           type: 'quote',
@@ -123,8 +142,8 @@ export default function FinancePage() {
           client: quote.client?.name,
           service: quote.serviceType,
           value: quote.value,
-          date: quote.date,
-          displayDate: executionDate,
+          date: quote.status === "Pago" && paidAtDate ? format(paidAtDate, "yyyy-MM-dd") : quote.date,
+          displayDate: quote.status === "Pago" && paidAtDate ? paidAtDate : executionDate,
           status: quote.status === "Pago" ? "Pago" : "Pendente",
           number: 1,
           totalInstallments: 1
@@ -132,7 +151,7 @@ export default function FinancePage() {
 
         if (quote.status === "Pago") {
           monthReceived += quote.value;
-        } else if (quote.status === "Aprovado") {
+        } else if (quote.status === "Aprovado" || quote.status === "Pendente") {
           monthPending += quote.value;
         }
       }
@@ -294,9 +313,9 @@ export default function FinancePage() {
                       </span>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
-                      {item.status !== "Pago" && item.type === 'installment' && (
+                      {item.status !== "Pago" && (
                         <button 
-                          onClick={() => handleMarkAsPaid(item.id)}
+                          onClick={() => handleMarkAsPaid(item.id, item.type)}
                           className="text-emerald-400 hover:text-emerald-300"
                         >
                           Receber
