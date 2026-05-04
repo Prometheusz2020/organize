@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Plus, Search, FileText, CheckCircle, Clock, XCircle, User } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -8,6 +9,7 @@ import { ptBR } from "date-fns/locale";
 import { getQuotes, updateQuoteStatusAction } from "@/actions";
 
 export default function QuotesList() {
+  const router = useRouter();
   const [quotes, setQuotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
@@ -162,7 +164,11 @@ export default function QuotesList() {
               </thead>
               <tbody className="bg-slate-900 divide-y divide-slate-800">
                 {filteredQuotes.map((quote) => (
-                  <tr key={quote.id} className="hover:bg-slate-800/50 transition-colors">
+                  <tr 
+                    key={quote.id} 
+                    className="hover:bg-slate-800/50 transition-colors cursor-pointer"
+                    onClick={() => router.push(`/dashboard/quotes/${quote.id}`)}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <div>
@@ -194,7 +200,10 @@ export default function QuotesList() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                       {quote.status === "Pendente" && (
                         <button 
-                          onClick={() => handleApprove(quote.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleApprove(quote.id);
+                          }}
                           className="text-emerald-400 hover:text-emerald-300 inline-flex items-center"
                         >
                           Aprovar

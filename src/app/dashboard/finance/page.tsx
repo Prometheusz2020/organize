@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { 
   ChevronLeft, 
   ChevronRight, 
@@ -17,6 +18,7 @@ import { format, startOfMonth, endOfMonth, isWithinInterval, parseISO } from "da
 import { getQuotes, updateInstallmentAction, updateQuoteStatusAction } from "@/actions";
 
 export default function FinancePage() {
+  const router = useRouter();
   const [quotes, setQuotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -288,7 +290,11 @@ export default function FinancePage() {
               </thead>
               <tbody className="bg-slate-900 divide-y divide-slate-800">
                 {monthlyReceivables.map((item, idx) => (
-                  <tr key={`${item.type}-${item.id}-${idx}`} className="hover:bg-slate-800/50 transition-colors">
+                  <tr 
+                    key={`${item.type}-${item.id}-${idx}`} 
+                    className="hover:bg-slate-800/50 transition-colors cursor-pointer"
+                    onClick={() => router.push(`/dashboard/quotes/${item.quoteId}`)}
+                  >
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
                       {format(item.displayDate, "dd/MM/yyyy")}
                     </td>
@@ -315,7 +321,10 @@ export default function FinancePage() {
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
                       {item.status !== "Pago" && (
                         <button 
-                          onClick={() => handleMarkAsPaid(item.id, item.type)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleMarkAsPaid(item.id, item.type);
+                          }}
                           className="text-emerald-400 hover:text-emerald-300"
                         >
                           Receber
