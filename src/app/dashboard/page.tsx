@@ -49,10 +49,10 @@ export default function Dashboard() {
   const statCards = [
     { name: "Total Recebido", value: formatCurrency(stats.totalRecebido || 0), icon: DollarSign, color: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20", href: "/dashboard/finance" },
     { name: "A Receber", value: formatCurrency(stats.totalAReceber || 0), icon: TrendingUp, color: "text-orange-400 bg-orange-500/10 border-orange-500/20", href: "/dashboard/finance" },
-    { name: "Orçamentos Aprovados", value: stats.approvedQuotes, icon: CheckCircle, color: "text-teal-400 bg-teal-500/10 border-teal-500/20" },
-    { name: "Orçamentos Pendentes", value: stats.pendingQuotes, icon: Clock, color: "text-amber-400 bg-amber-500/10 border-amber-500/20" },
-    { name: "Total de Clientes", value: stats.totalClients, icon: Users, color: "text-blue-400 bg-blue-500/10 border-blue-500/20" },
-    { name: "Total de Orçamentos", value: stats.totalQuotes, icon: FileText, color: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20" },
+    { name: "Orçamentos Aprovados", value: stats.approvedQuotes, icon: CheckCircle, color: "text-teal-400 bg-teal-500/10 border-teal-500/20", href: "/dashboard/quotes" },
+    { name: "Orçamentos Pendentes", value: stats.pendingQuotes, icon: Clock, color: "text-amber-400 bg-amber-500/10 border-amber-500/20", href: "/dashboard/quotes" },
+    { name: "Total de Clientes", value: stats.totalClients, icon: Users, color: "text-blue-400 bg-blue-500/10 border-blue-500/20", href: "/dashboard/clients" },
+    { name: "Total de Orçamentos", value: stats.totalQuotes, icon: FileText, color: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20", href: "/dashboard/quotes" },
   ];
 
   return (
