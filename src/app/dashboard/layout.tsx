@@ -13,7 +13,8 @@ import {
   X,
   Briefcase,
   Calendar,
-  DollarSign
+  DollarSign,
+  ShieldCheck
 } from "lucide-react";
 
 export default function DashboardLayout({
@@ -44,6 +45,8 @@ export default function DashboardLayout({
     await signOut({ redirect: true, callbackUrl: "/login" });
   };
 
+  const isAdmin = (session?.user as any)?.role === "ADMIN";
+
   const navigation = [
     { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { name: "Clientes", href: "/dashboard/clients", icon: Users },
@@ -51,6 +54,16 @@ export default function DashboardLayout({
     { name: "Calendário", href: "/dashboard/calendar", icon: Calendar },
     { name: "Financeiro", href: "/dashboard/finance", icon: DollarSign },
   ];
+
+  // Only show Users management to admins, or if no admin exists yet
+  // We'll add it for everyone for now so the first user can access it and set themselves as admin, 
+  // or we can just add it and rely on the page-level/action-level checks.
+  // Actually, let's add a check: if there's no admin in the system yet, show it.
+  // But since we can't easily check database here (it's a client component), 
+  // I'll show it for now or check the session.
+  if (isAdmin) {
+    navigation.push({ name: "Painel Admin", href: "/dashboard/admin", icon: ShieldCheck });
+  }
 
   return (
     <div className="flex h-screen bg-slate-950 overflow-hidden">

@@ -8,12 +8,18 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  password  String
-  createdAt DateTime @default(now())
-  clients   Client[]
-  quotes    Quote[]
+  id            String   @id @default(cuid())
+  email         String   @unique
+  password      String
+  name          String?
+  companyName   String?
+  phone         String?
+  cpf           String?
+  role          String   @default("USER") // "USER", "ADMIN"
+  licenseStatus String   @default("Pendente") // "Pendente", "Ativo", "Expirado"
+  createdAt     DateTime @default(now())
+  clients       Client[]
+  quotes        Quote[]
 }
 
 model Client {

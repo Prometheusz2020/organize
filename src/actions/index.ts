@@ -3,6 +3,7 @@
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import bcrypt from "bcryptjs";
 
 export async function getDashboardStats() {
   const session = await getServerSession(authOptions);
@@ -192,4 +193,160 @@ export async function updateQuoteStatusAction(id: string, status: string) {
     where: { id, userId: user.id },
     data
   });
+}
+
+// User Management Actions (Admin)
+export async function getUsers() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+
+  // Check if user is admin (optional: strict check)
+  const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!currentUser || currentUser.role !== "ADMIN") {
+    // For now, if no admin exists, allow the first user to see this
+    const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
+    if (adminCount > 0) throw new Error("Acesso negado");
+  }
+
+  return await prisma.user.findMany({
+    orderBy: { createdAt: 'desc' },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      companyName: true,
+      phone: true,
+      cpf: true,
+      role: true,
+      licenseStatus: true,
+      createdAt: true
+    }
+  });
+}
+
+export async function getUserAction(id: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+
+  const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!currentUser || currentUser.role !== "ADMIN") {
+    throw new Error("Acesso negado");
+  }
+
+  return await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      companyName: true,
+      phone: true,
+      cpf: true,
+      role: true,
+      licenseStatus: true,
+      createdAt: true
+    }
+  });
+}
+
+export async function createUserAction(data: any) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+
+  const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!currentUser || currentUser.role !== "ADMIN") {
+    const adminCount = await prisma.user.count({ where: { role: "ADMIN" } });
+    if (adminCount > 0) throw new Error("Acesso negado");
+  }
+
+  const hashedPassword = await bcrypt.hash(data.password, 10);
+
+  return await prisma.user.create({
+    data: {
+      email: data.email,
+      password: hashedPassword,
+      name: data.name,
+      companyName: data.companyName,
+      phone: data.phone,
+      cpf: data.cpf,
+      role: data.role || "USER",
+      licenseStatus: data.licenseStatus || "Ativo"
+    }
+  });
+}
+
+export async function updateUserAction(id: string, data: any) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+
+  const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!currentUser || currentUser.role !== "ADMIN") {
+    throw new Error("Acesso negado");
+  }
+
+  const updateData: any = { ...data };
+  if (data.password) {
+    updateData.password = await bcrypt.hash(data.password, 10);
+  }
+
+  return await prisma.user.update({
+    where: { id },
+    data: updateData
+  });
+}
+
+export async function deleteUserAction(id: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+
+  const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!currentUser || currentUser.role !== "ADMIN") {
+    throw new Error("Acesso negado");
+  }
+
+  // Prevent self-deletion
+  if (currentUser.id === id) throw new Error("Você não pode excluir seu próprio usuário");
+
+  return await prisma.user.delete({
+    where: { id }
+  });
+}
+
+export async function getAdminStats() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+  
+  const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!currentUser || currentUser.role !== "ADMIN") throw new Error("Acesso negado");
+
+  const totalUsers = await prisma.user.count({ where: { role: "USER" } });
+  const activeUsers = await prisma.user.count({ where: { role: "USER", licenseStatus: "Ativo" } });
+  const pendingUsers = await prisma.user.count({ where: { role: "USER", licenseStatus: "Pendente" } });
+  const expiredUsers = await prisma.user.count({ where: { role: "USER", licenseStatus: "Expirado" } });
+
+  const recentUsers = await prisma.user.findMany({
+    where: { role: "USER" },
+    orderBy: { createdAt: 'desc' },
+    take: 5,
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      companyName: true,
+      licenseStatus: true,
+      createdAt: true
+    }
+  });
+
+  return {
+    totalUsers,
+    activeUsers,
+    pendingUsers,
+    expiredUsers,
+    recentUsers
+  };
+}
+
+export async function verifyPinAction(pin: string) {
+  return pin === process.env.ADMIN_PIN;
 }
