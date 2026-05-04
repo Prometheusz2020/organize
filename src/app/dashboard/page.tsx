@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Users, FileText, Clock, CheckCircle, DollarSign, TrendingUp } from "lucide-react";
+import { Users, FileText, Clock, CheckCircle, DollarSign, TrendingUp, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 import { getDashboardStats } from "@/actions";
 
@@ -15,6 +15,7 @@ export default function Dashboard() {
     totalAReceber: 0,
   });
   const [loading, setLoading] = useState(true);
+  const [showValues, setShowValues] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -57,11 +58,20 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold text-slate-50 tracking-tight">Dashboard</h1>
-        <p className="mt-2 text-sm text-slate-400">
-          Bem-vindo de volta! Aqui está o resumo do seu negócio.
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold text-slate-50 tracking-tight">Dashboard</h1>
+          <p className="mt-2 text-sm text-slate-400">
+            Bem-vindo de volta! Aqui está o resumo do seu negócio.
+          </p>
+        </div>
+        <button 
+          onClick={() => setShowValues(!showValues)}
+          className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-50 transition-colors"
+          title={showValues ? "Ocultar valores" : "Mostrar valores"}
+        >
+          {showValues ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+        </button>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -76,9 +86,9 @@ export default function Dashboard() {
                 </div>
                 <div className="ml-3 sm:ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="truncate text-xs sm:text-sm font-medium text-slate-400">{item.name}</dt>
-                    <dd className="mt-0.5 sm:mt-1 text-lg sm:text-3xl font-semibold tracking-tight text-slate-50">
-                      {item.value}
+                    <dt className="truncate text-[10px] sm:text-sm font-medium text-slate-400">{item.name}</dt>
+                    <dd className="mt-0.5 sm:mt-1 text-sm sm:text-3xl font-semibold tracking-tight text-slate-50 truncate">
+                      {showValues ? item.value : "••••••"}
                     </dd>
                   </dl>
                 </div>
