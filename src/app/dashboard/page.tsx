@@ -64,20 +64,20 @@ export default function Dashboard() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {statCards.map((item) => {
           const CardContent = (
-            <div className="p-5">
+            <div className="p-3 sm:p-5">
               <div className="flex items-center">
                 <div className="flex-shrink-0">
-                  <div className={`p-3 rounded-lg border ${item.color}`}>
-                    <item.icon className="h-6 w-6" aria-hidden="true" />
+                  <div className={`p-2 sm:p-3 rounded-lg border ${item.color}`}>
+                    <item.icon className="h-4 w-4 sm:h-6 w-6" aria-hidden="true" />
                   </div>
                 </div>
-                <div className="ml-5 w-0 flex-1">
+                <div className="ml-3 sm:ml-5 w-0 flex-1">
                   <dl>
-                    <dt className="truncate text-sm font-medium text-slate-400">{item.name}</dt>
-                    <dd className="mt-1 text-3xl font-semibold tracking-tight text-slate-50">
+                    <dt className="truncate text-xs sm:text-sm font-medium text-slate-400">{item.name}</dt>
+                    <dd className="mt-0.5 sm:mt-1 text-lg sm:text-3xl font-semibold tracking-tight text-slate-50">
                       {item.value}
                     </dd>
                   </dl>
