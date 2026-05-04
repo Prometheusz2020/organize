@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  clients   Client[]
+  quotes    Quote[]
+}
+
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String
+  email     String?
+  address   String?
+  notes     String?
+  createdAt DateTime @default(now())
+  
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  quotes    Quote[]
+}
+
+model Quote {
+  id          String   @id @default(cuid())
+  serviceType String
+  description String
+  value       Float
+  date        String
+  endDate     String?
+  status      String   @default("Pendente")
+  createdAt   DateTime @default(now())
+  
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  paymentMethod String?  @default("À vista")
+  installments  Installment[]
+}
+
+model Installment {
+  id        String   @id @default(cuid())
+  quoteId   String
+  quote     Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  number    Int
+  value     Float
+  dueDate   String
+  status    String   @default("Pendente") // "Pendente", "Pago"
+  createdAt DateTime @default(now())
+}
