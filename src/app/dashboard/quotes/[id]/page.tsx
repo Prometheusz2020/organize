@@ -228,57 +228,22 @@ export default function QuoteDetails() {
             </div>
             
             {quote.installments && quote.installments.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-slate-800">
-                  <thead className="bg-slate-950/50">
-                    <tr>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                        #
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                        Vencimento
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                        Valor
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
-                        Status
-                      </th>
-                      <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">
-                        Ações
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-slate-900 divide-y divide-slate-800">
-                    {quote.installments.map((inst: any) => (
-                      <tr key={inst.id} className="hover:bg-slate-800/50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-300">
-                          {inst.number}ª
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-50">
-                          {editingInstallment === inst.id ? (
-                            <input
-                              type="date"
-                              value={editData.dueDate}
-                              onChange={(e) => setEditData({ ...editData, dueDate: e.target.value })}
-                              className="block w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-slate-50 focus:border-indigo-500 focus:outline-none sm:text-sm"
-                            />
-                          ) : (
-                            <span className="flex items-center">
-                              <Calendar className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
-                              {format(new Date(inst.dueDate), "dd/MM/yyyy")}
-                            </span>
-                          )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-50">
-                          {formatCurrency(inst.value)}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+              <>
+                {/* Mobile View (Cards) */}
+                <div className="block sm:hidden divide-y divide-slate-800">
+                  {quote.installments.map((inst: any) => (
+                    <div key={inst.id} className="p-4 space-y-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{inst.number}ª Parcela</span>
+                          <div className="text-lg font-bold text-slate-50 mt-1">{formatCurrency(inst.value)}</div>
+                        </div>
+                        <div className="flex-shrink-0">
                           {editingInstallment === inst.id ? (
                             <select
                               value={editData.status}
                               onChange={(e) => setEditData({ ...editData, status: e.target.value })}
-                              className="block w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-slate-50 focus:border-indigo-500 focus:outline-none sm:text-sm"
+                              className="block w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-slate-50 focus:border-indigo-500 focus:outline-none text-xs"
                             >
                               <option value="Pendente">Pendente</option>
                               <option value="Pago">Pago</option>
@@ -287,21 +252,39 @@ export default function QuoteDetails() {
                           ) : (
                             getStatusBadge(inst.status)
                           )}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        </div>
+                      </div>
+                      
+                      <div className="flex justify-between items-center">
+                        <div className="text-sm text-slate-400">
+                          {editingInstallment === inst.id ? (
+                            <input
+                              type="date"
+                              value={editData.dueDate}
+                              onChange={(e) => setEditData({ ...editData, dueDate: e.target.value })}
+                              className="block w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-slate-50 focus:border-indigo-500 focus:outline-none text-xs"
+                            />
+                          ) : (
+                            <span className="flex items-center text-xs">
+                              <Calendar className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
+                              Vence em: {format(new Date(inst.dueDate), "dd/MM/yyyy")}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-3">
                           {editingInstallment === inst.id ? (
                             <button
                               onClick={() => saveInstallment(inst.id)}
-                              className="text-emerald-400 hover:text-emerald-300 flex items-center justify-end w-full"
+                              className="bg-emerald-500 text-white px-3 py-1.5 rounded-lg font-bold text-xs flex items-center shadow-lg"
                             >
-                              <Save className="h-4 w-4 mr-1" /> Salvar
+                              <Save className="h-3.5 w-3.5 mr-1.5" /> Salvar
                             </button>
                           ) : (
-                            <div className="flex items-center justify-end space-x-4">
+                            <div className="flex items-center space-x-2">
                               {inst.status !== "Pago" && (
                                 <button
                                   onClick={() => handleReceiveInstallment(inst.id)}
-                                  className="text-emerald-400 hover:text-emerald-300 flex items-center"
+                                  className="text-emerald-400 border border-emerald-500/30 bg-emerald-500/5 p-2 rounded-lg"
                                   title="Receber Parcela"
                                 >
                                   <CheckCircle className="h-5 w-5" />
@@ -309,19 +292,115 @@ export default function QuoteDetails() {
                               )}
                               <button
                                 onClick={() => startEditingInstallment(inst)}
-                                className="text-indigo-400 hover:text-indigo-300 flex items-center"
+                                className="text-indigo-400 border border-indigo-500/30 bg-indigo-500/5 p-2 rounded-lg"
                                 title="Editar Parcela"
                               >
                                 <Edit2 className="h-5 w-5" />
                               </button>
                             </div>
                           )}
-                        </td>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop View (Table) */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="min-w-full divide-y divide-slate-800">
+                    <thead className="bg-slate-950/50">
+                      <tr>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                          #
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                          Vencimento
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                          Valor
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">
+                          Status
+                        </th>
+                        <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-400 uppercase tracking-wider">
+                          Ações
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="bg-slate-900 divide-y divide-slate-800">
+                      {quote.installments.map((inst: any) => (
+                        <tr key={inst.id} className="hover:bg-slate-800/50 transition-colors">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-300">
+                            {inst.number}ª
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-50">
+                            {editingInstallment === inst.id ? (
+                              <input
+                                type="date"
+                                value={editData.dueDate}
+                                onChange={(e) => setEditData({ ...editData, dueDate: e.target.value })}
+                                className="block w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-slate-50 focus:border-indigo-500 focus:outline-none sm:text-sm"
+                              />
+                            ) : (
+                              <span className="flex items-center">
+                                <Calendar className="mr-1.5 h-3.5 w-3.5 text-slate-500" />
+                                {format(new Date(inst.dueDate), "dd/MM/yyyy")}
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-50">
+                            {formatCurrency(inst.value)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm">
+                            {editingInstallment === inst.id ? (
+                              <select
+                                value={editData.status}
+                                onChange={(e) => setEditData({ ...editData, status: e.target.value })}
+                                className="block w-full rounded-md border border-slate-700 bg-slate-950 px-2 py-1 text-slate-50 focus:border-indigo-500 focus:outline-none sm:text-sm"
+                              >
+                                <option value="Pendente">Pendente</option>
+                                <option value="Pago">Pago</option>
+                                <option value="Atrasado">Atrasado</option>
+                              </select>
+                            ) : (
+                              getStatusBadge(inst.status)
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            {editingInstallment === inst.id ? (
+                              <button
+                                onClick={() => saveInstallment(inst.id)}
+                                className="text-emerald-400 hover:text-emerald-300 flex items-center justify-end w-full"
+                              >
+                                <Save className="h-4 w-4 mr-1" /> Salvar
+                              </button>
+                            ) : (
+                              <div className="flex items-center justify-end space-x-4">
+                                {inst.status !== "Pago" && (
+                                  <button
+                                    onClick={() => handleReceiveInstallment(inst.id)}
+                                    className="text-emerald-400 hover:text-emerald-300 flex items-center"
+                                    title="Receber Parcela"
+                                  >
+                                    <CheckCircle className="h-5 w-5" />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => startEditingInstallment(inst)}
+                                  className="text-indigo-400 hover:text-indigo-300 flex items-center"
+                                  title="Editar Parcela"
+                                >
+                                  <Edit2 className="h-5 w-5" />
+                                </button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ) : (
               <div className="p-8 text-center text-slate-400">
                 <DollarSign className="mx-auto h-12 w-12 text-slate-600 mb-3" />
