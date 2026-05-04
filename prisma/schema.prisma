@@ -58,6 +58,7 @@ model Installment {
   number    Int
   value     Float
   dueDate   String
+  paidAt    DateTime?
   status    String   @default("Pendente") // "Pendente", "Pago"
   createdAt DateTime @default(now())
 }

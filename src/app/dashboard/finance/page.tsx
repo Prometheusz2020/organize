@@ -75,7 +75,21 @@ export default function FinancePage() {
     if (quote.installments && quote.installments.length > 0) {
       quote.installments.forEach((inst: any) => {
         const dueDate = parseISO(inst.dueDate);
-        if (isWithinInterval(dueDate, { start: monthStart, end: monthEnd })) {
+        const paidAtDate = inst.paidAt ? (typeof inst.paidAt === 'string' ? parseISO(inst.paidAt) : inst.paidAt) : null;
+        
+        let isInMonth = false;
+        
+        if (inst.status === "Pago" && paidAtDate) {
+          if (isWithinInterval(paidAtDate, { start: monthStart, end: monthEnd })) {
+            isInMonth = true;
+          }
+        } else if (inst.status !== "Pago") {
+          if (isWithinInterval(dueDate, { start: monthStart, end: monthEnd })) {
+            isInMonth = true;
+          }
+        }
+
+        if (isInMonth) {
           monthlyReceivables.push({
             id: inst.id,
             type: 'installment',
@@ -83,7 +97,8 @@ export default function FinancePage() {
             client: quote.client?.name,
             service: quote.serviceType,
             value: inst.value,
-            date: inst.dueDate,
+            date: inst.status === "Pago" && paidAtDate ? format(paidAtDate, "yyyy-MM-dd") : inst.dueDate,
+            displayDate: inst.status === "Pago" && paidAtDate ? paidAtDate : dueDate,
             status: inst.status,
             number: inst.number,
             totalInstallments: quote.installments.length
@@ -97,8 +112,9 @@ export default function FinancePage() {
         }
       });
     } else if (quote.paymentMethod === "À vista" || !quote.installments?.length) {
-      // Handle "À vista" quotes that are approved or paid
       const executionDate = parseISO(quote.date);
+      // For simplicity, we'll treat "À vista" as based on execution date for now, 
+      // but ideally it should also have a paidAt if marked as Pago.
       if (isWithinInterval(executionDate, { start: monthStart, end: monthEnd })) {
         monthlyReceivables.push({
           id: quote.id,
@@ -108,6 +124,7 @@ export default function FinancePage() {
           service: quote.serviceType,
           value: quote.value,
           date: quote.date,
+          displayDate: executionDate,
           status: quote.status === "Pago" ? "Pago" : "Pendente",
           number: 1,
           totalInstallments: 1
@@ -254,7 +271,7 @@ export default function FinancePage() {
                 {monthlyReceivables.map((item, idx) => (
                   <tr key={`${item.type}-${item.id}-${idx}`} className="hover:bg-slate-800/50 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-400">
-                      {format(parseISO(item.date), "dd/MM/yyyy")}
+                      {format(item.displayDate, "dd/MM/yyyy")}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-slate-50">{item.client}</div>

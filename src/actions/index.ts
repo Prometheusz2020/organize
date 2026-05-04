@@ -161,9 +161,16 @@ export async function updateInstallmentAction(id: string, data: any) {
     throw new Error("Parcela não encontrada ou não autorizada");
   }
 
+  const updateData = { ...data };
+  if (data.status === "Pago") {
+    updateData.paidAt = new Date();
+  } else if (data.status === "Pendente") {
+    updateData.paidAt = null;
+  }
+
   return await prisma.installment.update({
     where: { id },
-    data
+    data: updateData
   });
 }
 
