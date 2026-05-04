@@ -17,12 +17,21 @@ import { getAdminStats } from "@/actions";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import PinGate from "../PinGate";
+import { useSession } from "next-auth/react";
 
 export default function AdminDashboard() {
+  const { data: session } = useSession();
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  const isAdmin = (session?.user as any)?.role === "ADMIN";
+
   useEffect(() => {
+    if (!isAdmin) {
+      setLoading(false);
+      return;
+    }
+
     const fetchStats = async () => {
       try {
         const data = await getAdminStats();
@@ -41,6 +50,16 @@ export default function AdminDashboard() {
     return (
       <div className="flex h-[60vh] items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500"></div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="flex h-[60vh] flex-col items-center justify-center space-y-4">
+        <ShieldAlert className="h-16 w-16 text-red-500" />
+        <h1 className="text-2xl font-bold text-slate-50">Acesso Negado</h1>
+        <p className="text-slate-400">Você não tem permissão para acessar esta área.</p>
       </div>
     );
   }

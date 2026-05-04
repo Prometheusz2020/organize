@@ -19,16 +19,24 @@ import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getUsers, deleteUserAction, updateUserAction } from "@/actions";
 import PinGate from "../PinGate";
+import { useSession } from "next-auth/react";
 
 export default function UsersPage() {
+  const { data: session } = useSession();
   const router = useRouter();
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
 
+  const isAdmin = (session?.user as any)?.role === "ADMIN";
+
   useEffect(() => {
+    if (!isAdmin) {
+      setLoading(false);
+      return;
+    }
     fetchUsers();
-  }, []);
+  }, [isAdmin]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -133,7 +141,13 @@ export default function UsersPage() {
             <div className="p-12 text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-500 mx-auto"></div>
             </div>
-          ) : filteredUsers.length === 0 ? (
+          ) : !isAdmin ? (
+          <div className="p-12 text-center text-red-400">
+            <Shield className="mx-auto h-12 w-12 text-red-600 mb-3" />
+            <h3 className="text-lg font-bold">Acesso Negado</h3>
+            <p>Você não tem permissão para gerenciar usuários.</p>
+          </div>
+        ) : filteredUsers.length === 0 ? (
             <div className="p-12 text-center text-slate-400">
               <Activity className="mx-auto h-12 w-12 text-slate-600 mb-3" />
               <p>Nenhum usuário encontrado.</p>
