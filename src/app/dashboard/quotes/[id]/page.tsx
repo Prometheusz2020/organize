@@ -180,35 +180,37 @@ export default function QuoteDetails() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-4">
+    <div className="max-w-5xl mx-auto space-y-4 sm:space-y-6">
+      <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        <div className="flex items-center space-x-3">
           <Link
             href="/dashboard/quotes"
-            className="inline-flex items-center justify-center rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-50 transition-colors"
+            className="inline-flex items-center justify-center rounded-lg p-2 text-slate-400 hover:bg-slate-800 hover:text-slate-50 transition-colors border border-slate-800 sm:border-transparent"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-slate-50 tracking-tight">
-              Detalhes do Orçamento
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-50 tracking-tight">
+              Orçamento
             </h1>
-            <p className="text-sm text-slate-400">Gerencie informações e parcelas do orçamento.</p>
+            <p className="text-xs sm:text-sm text-slate-400 truncate max-w-[200px] sm:max-w-none">
+              {quote.client?.name}
+            </p>
           </div>
         </div>
         
-        <div className="flex space-x-3">
+        <div className="flex items-center space-x-2 sm:space-x-3">
           <button
             onClick={handleSendWhatsApp}
-            className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-all"
+            className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-emerald-500 transition-all active:scale-95"
           >
             <MessageCircle className="-ml-1 mr-2 h-5 w-5" />
-            Enviar WhatsApp
+            WhatsApp
           </button>
           <select
             value={quote.status}
             onChange={(e) => handleUpdateStatus(e.target.value)}
-            className="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-slate-50 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 sm:text-sm"
+            className="flex-1 sm:flex-none rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 text-sm font-medium text-slate-50 focus:border-indigo-500 focus:outline-none"
           >
             <option value="Pendente">Pendente</option>
             <option value="Aprovado">Aprovado</option>
@@ -217,56 +219,49 @@ export default function QuoteDetails() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-1 space-y-6">
-          <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800 p-6">
-            <h3 className="text-lg font-medium text-slate-50 mb-4 border-b border-slate-800 pb-2">Resumo</h3>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="lg:col-span-1 space-y-4 sm:space-y-6">
+          <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800 p-5 sm:p-6">
+            <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-3">
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">Resumo</h3>
+              {getStatusBadge(quote.status)}
+            </div>
             
-            <dl className="space-y-4 text-sm">
-              <div>
-                <dt className="text-slate-400">Cliente</dt>
-                <dd className="font-medium text-slate-50 mt-1">{quote.client?.name}</dd>
-              </div>
-              <div>
-                <dt className="text-slate-400">Serviço</dt>
-                <dd className="font-medium text-slate-50 mt-1">{quote.serviceType}</dd>
-              </div>
-              <div>
-                <dt className="text-slate-400">Data de Criação</dt>
-                <dd className="font-medium text-slate-50 mt-1 text-xs">
-                  {quote.createdAt ? format(new Date(quote.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR }) : '-'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-slate-400">Data de Execução</dt>
-                <dd className="font-medium text-slate-50 mt-1">
-                  {format(new Date(quote.date), "dd 'de' MMMM, yyyy", { locale: ptBR })}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-slate-400">Valor Total</dt>
-                <dd className="font-medium text-slate-50 text-lg mt-1 text-indigo-400">
+            <dl className="grid grid-cols-2 gap-y-4 gap-x-2 sm:block sm:space-y-4 text-sm">
+              <div className="col-span-2 border-b border-slate-800/50 pb-2 sm:border-0 sm:pb-0">
+                <dt className="text-xs text-slate-500 uppercase font-bold tracking-tighter">Valor Total</dt>
+                <dd className="font-extrabold text-2xl text-indigo-400 mt-0.5">
                   {formatCurrency(quote.value)}
                 </dd>
               </div>
               <div>
-                <dt className="text-slate-400">Pagamento</dt>
-                <dd className="font-medium text-slate-50 mt-1">{quote.paymentMethod}</dd>
+                <dt className="text-xs text-slate-500 uppercase font-bold tracking-tighter">Cliente</dt>
+                <dd className="font-bold text-slate-50 mt-0.5 truncate">{quote.client?.name}</dd>
               </div>
               <div>
-                <dt className="text-slate-400">Status Geral</dt>
-                <dd className="mt-1">{getStatusBadge(quote.status)}</dd>
+                <dt className="text-xs text-slate-500 uppercase font-bold tracking-tighter">Serviço</dt>
+                <dd className="font-medium text-slate-50 mt-0.5">{quote.serviceType}</dd>
+              </div>
+              <div>
+                <dt className="text-xs text-slate-500 uppercase font-bold tracking-tighter">Execução</dt>
+                <dd className="font-medium text-slate-50 mt-0.5 text-xs">
+                  {format(new Date(quote.date), "dd/MM/yyyy", { locale: ptBR })}
+                </dd>
+              </div>
+              <div>
+                <dt className="text-xs text-slate-500 uppercase font-bold tracking-tighter">Pagamento</dt>
+                <dd className="font-medium text-slate-50 mt-0.5 text-xs">{quote.paymentMethod}</dd>
               </div>
             </dl>
           </div>
           
-          <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800 p-6">
-            <h3 className="text-lg font-medium text-slate-50 mb-4 border-b border-slate-800 pb-2">Descrição</h3>
-            <p className="text-sm text-slate-300 whitespace-pre-wrap">{quote.description}</p>
+          <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800 p-5 sm:p-6">
+            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3 border-b border-slate-800 pb-2">Descrição</h3>
+            <p className="text-sm text-slate-300 whitespace-pre-wrap leading-relaxed">{quote.description || "Sem descrição informada."}</p>
           </div>
         </div>
 
-        <div className="md:col-span-2">
+        <div className="lg:col-span-2">
           <div className="bg-slate-900 rounded-xl shadow-sm border border-slate-800 overflow-hidden">
             <div className="p-6 border-b border-slate-800 flex justify-between items-center">
               <h3 className="text-lg font-medium text-slate-50">Controle Financeiro / Parcelas</h3>
