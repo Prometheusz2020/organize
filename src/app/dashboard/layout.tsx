@@ -54,7 +54,7 @@ export default function DashboardLayout({
     { name: "Orçamentos", href: "/dashboard/quotes", icon: FileText },
     { name: "Calendário", href: "/dashboard/calendar", icon: Calendar },
     { name: "Financeiro", href: "/dashboard/finance", icon: DollarSign },
-    { name: "Meu Perfil", href: "/dashboard/profile", icon: User },
+    { name: "Alterar Senha", href: "/dashboard/profile", icon: User },
   ];
 
   // Only show Users management to admins, or if no admin exists yet
