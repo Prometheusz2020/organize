@@ -3,11 +3,13 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Clock, XCircle, DollarSign, Calendar, Edit2, Save, MessageCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle, Clock, XCircle, DollarSign, Calendar, Edit2, Save, MessageCircle, FileText } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getQuoteById, updateInstallmentAction, updateQuoteStatusAction } from "@/actions";
 import { useSession } from "next-auth/react";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 
 export default function QuoteDetails() {
   const { data: session } = useSession();
@@ -60,6 +62,98 @@ export default function QuoteDetails() {
 
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/55${phone}?text=${encodedMessage}`, "_blank");
+  };
+
+  const handleGeneratePDF = () => {
+    if (!quote) return;
+
+    const doc = new jsPDF();
+    const companyName = (session?.user as any)?.companyName || "Nossa Empresa";
+    
+    // Header
+    doc.setFillColor(79, 70, 229); // Indigo-600
+    doc.rect(0, 0, 210, 40, 'F');
+    
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(24);
+    doc.setFont("helvetica", "bold");
+    doc.text("ORÇAMENTO", 20, 25);
+    
+    doc.setFontSize(12);
+    doc.text(companyName.toUpperCase(), 140, 25);
+    
+    // Client Info
+    doc.setTextColor(0, 0, 0);
+    doc.setFontSize(14);
+    doc.text("DADOS DO CLIENTE", 20, 55);
+    doc.setLineWidth(0.5);
+    doc.line(20, 57, 190, 57);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Cliente: ${quote.client?.name}`, 20, 65);
+    doc.text(`Telefone: ${quote.client?.phone || 'Não informado'}`, 20, 72);
+    doc.text(`CPF: ${quote.client?.cpf || 'Não informado'}`, 20, 79);
+    
+    // Service Info
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("DETALHES DO SERVIÇO", 20, 95);
+    doc.line(20, 97, 190, 97);
+    
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Tipo de Serviço: ${quote.serviceType}`, 20, 105);
+    doc.text(`Data de Execução: ${format(new Date(quote.date), "dd/MM/yyyy")}`, 20, 112);
+    doc.text(`Forma de Pagamento: ${quote.paymentMethod}`, 20, 119);
+    
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text("Descrição:", 20, 130);
+    doc.setFont("helvetica", "normal");
+    const splitDescription = doc.splitTextToSize(quote.description, 170);
+    doc.text(splitDescription, 20, 137);
+    
+    const descriptionHeight = splitDescription.length * 7;
+    let nextY = 137 + descriptionHeight + 10;
+    
+    // Installments Table
+    if (quote.installments && quote.installments.length > 0) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("PARCELAMENTO", 20, nextY);
+      doc.line(20, nextY + 2, 190, nextY + 2);
+      
+      const tableData = quote.installments.map((inst: any) => [
+        `${inst.number}ª Parcela`,
+        format(new Date(inst.dueDate), "dd/MM/yyyy"),
+        formatCurrency(inst.value)
+      ]);
+      
+      (doc as any).autoTable({
+        startY: nextY + 5,
+        head: [['Parcela', 'Vencimento', 'Valor']],
+        body: tableData,
+        theme: 'striped',
+        headStyles: { fillColor: [79, 70, 229] }
+      });
+      
+      nextY = (doc as any).lastAutoTable.finalY + 15;
+    }
+    
+    // Total
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(79, 70, 229);
+    doc.text(`VALOR TOTAL: ${formatCurrency(quote.value)}`, 20, nextY);
+    
+    // Footer
+    doc.setFontSize(9);
+    doc.setTextColor(150, 150, 150);
+    doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}`, 20, 285);
+    doc.text("Obrigado pela preferência!", 150, 285);
+
+    doc.save(`Orcamento_${quote.client?.name.replace(/\s+/g, '_')}.pdf`);
   };
 
   const fetchQuote = async () => {
@@ -200,6 +294,14 @@ export default function QuoteDetails() {
         </div>
         
         <div className="flex items-center space-x-2 sm:space-x-3">
+          <button
+            onClick={handleGeneratePDF}
+            className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-bold text-slate-300 border border-slate-700 shadow-sm hover:bg-slate-700 hover:text-slate-50 transition-all active:scale-95"
+            title="Baixar Orçamento em PDF"
+          >
+            <FileText className="-ml-1 mr-2 h-5 w-5" />
+            PDF
+          </button>
           <button
             onClick={handleSendWhatsApp}
             className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-emerald-500 transition-all active:scale-95"

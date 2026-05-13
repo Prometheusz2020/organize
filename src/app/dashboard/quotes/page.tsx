@@ -2,13 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Search, FileText, CheckCircle, Clock, XCircle, User } from "lucide-react";
+import { Plus, Search, FileText, CheckCircle, Clock, XCircle, User, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getQuotes, updateQuoteStatusAction } from "@/actions";
+import { useSession } from "next-auth/react";
 
 export default function QuotesList() {
+  const { data: session } = useSession();
   const router = useRouter();
   const [quotes, setQuotes] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -28,6 +30,36 @@ export default function QuotesList() {
 
     fetchQuotes();
   }, []);
+
+  const handleSendWhatsApp = (quote: any) => {
+    const companyName = (session?.user as any)?.companyName || "Nossa Empresa";
+    const phone = quote.client?.phone?.replace(/\D/g, "");
+    
+    if (!phone) {
+      alert("O cliente não possui um telefone cadastrado.");
+      return;
+    }
+
+    let message = `*ORÇAMENTO - ${companyName.toUpperCase()}*\n`;
+    message += `--------------------------\n`;
+    message += `*Cliente:* ${quote.client?.name}\n`;
+    message += `*Serviço:* ${quote.serviceType}\n`;
+    message += `*Data:* ${format(new Date(quote.date), "dd/MM/yyyy")}\n`;
+    message += `*Valor Total:* ${formatCurrency(quote.value)}\n\n`;
+    message += `*Descrição:*\n${quote.description}\n\n`;
+    message += `*Forma de Pagamento:* ${quote.paymentMethod}\n`;
+    
+    if (quote.installments && quote.installments.length > 0) {
+      message += `*Parcelamento:*\n`;
+      quote.installments.forEach((inst: any) => {
+        message += `- ${inst.number}ª Parcela: ${formatCurrency(inst.value)}\n`;
+      });
+    }
+
+    message += `\nObrigado pela preferência!`;
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/55${phone}?text=${encodedMessage}`, "_blank");
+  };
 
   const handleApprove = async (id: string) => {
     try {
@@ -167,6 +199,15 @@ export default function QuotesList() {
                 </div>
                 <div className="flex items-center space-x-2">
                   {getStatusBadge(quote.status)}
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleSendWhatsApp(quote);
+                    }}
+                    className="p-1.5 rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                  >
+                    <MessageCircle className="h-4 w-4" />
+                  </button>
                   {quote.status === "Pendente" && (
                     <button 
                       onClick={(e) => {
@@ -245,6 +286,16 @@ export default function QuotesList() {
                     {getStatusBadge(quote.status)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-3">
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSendWhatsApp(quote);
+                      }}
+                      className="text-emerald-400 hover:text-emerald-300 inline-flex items-center"
+                      title="Enviar WhatsApp"
+                    >
+                      <MessageCircle className="h-5 w-5" />
+                    </button>
                     {quote.status === "Pendente" && (
                       <button 
                         onClick={(e) => {
