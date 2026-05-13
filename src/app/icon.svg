@@ -1,17 +1,23 @@
 <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="diamond-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6366f1" />
+      <stop offset="100%" stop-color="#4f46e5" />
+    </linearGradient>
+  </defs>
   <rect 
     x="50" 
-    y="10" 
-    width="56.57" 
-    height="56.57" 
-    rx="12" 
-    transform="rotate(45 50 10)" 
-    fill="#6366f1"
+    y="12" 
+    width="54" 
+    height="54" 
+    rx="14" 
+    transform="rotate(45 50 12)" 
+    fill="url(#diamond-grad)"
   />
   <path 
-    d="M38 52L46 60L62 44" 
+    d="M36 52L45 61L64 42" 
     stroke="white" 
-    stroke-width="6" 
+    stroke-width="8" 
     stroke-linecap="round" 
     stroke-linejoin="round" 
   />

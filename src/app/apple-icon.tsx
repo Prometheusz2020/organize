@@ -30,21 +30,22 @@ export default function Icon() {
             display: 'flex',
             width: '100px',
             height: '100px',
-            backgroundColor: '#6366f1',
-            borderRadius: '16px',
+            background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
+            borderRadius: '20px',
             transform: 'rotate(45deg)',
             position: 'relative',
             alignItems: 'center',
             justifyContent: 'center',
+            boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
           }}
         >
           <div 
             style={{
-              width: '40px',
-              height: '20px',
-              borderLeft: '8px solid white',
-              borderBottom: '8px solid white',
-              transform: 'rotate(-45deg) translate(5px, -5px)',
+              width: '45px',
+              height: '25px',
+              borderLeft: '12px solid white',
+              borderBottom: '12px solid white',
+              transform: 'rotate(-45deg) translate(8px, -8px)',
               marginTop: '-5px',
             }}
           />

@@ -39,26 +39,32 @@ export const Logo: React.FC<LogoProps> = ({ size = 32, variant = "diamond", clas
         );
       case "diamond":
       default:
-        // Concept 3: Diamond Check (Selected)
+        // Concept 3: Diamond Check (Premium Version)
         return (
           <>
-            {/* Main Diamond Shape */}
+            <defs>
+              <linearGradient id="diamond-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="currentColor" />
+                <stop offset="100%" stopColor="#4f46e5" /> {/* Indigo-600 */}
+              </linearGradient>
+            </defs>
             <rect 
               x="50" 
-              y="10" 
-              width="56.57" 
-              height="56.57" 
-              rx="12" 
-              transform="rotate(45 50 10)" 
-              fill="currentColor"
+              y="12" 
+              width="54" 
+              height="54" 
+              rx="14" 
+              transform="rotate(45 50 12)" 
+              fill="url(#diamond-grad)"
             />
-            {/* Inner Checkmark */}
+            {/* Styled bold checkmark */}
             <path 
-              d="M38 52L46 60L62 44" 
+              d="M36 52L45 61L64 42" 
               stroke="white" 
-              strokeWidth="6" 
+              strokeWidth="8" 
               strokeLinecap="round" 
               strokeLinejoin="round" 
+              style={{ filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.1))" }}
             />
           </>
         );
