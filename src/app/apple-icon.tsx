@@ -2,8 +2,8 @@ import { ImageResponse } from 'next/og'
 
 // Image metadata
 export const size = {
-  width: 180,
-  height: 180,
+  width: 512,
+  height: 512,
 }
 export const contentType = 'image/png'
 
@@ -28,25 +28,25 @@ export default function Icon() {
         <div 
           style={{
             display: 'flex',
-            width: '100px',
-            height: '100px',
+            width: '300px',
+            height: '300px',
             background: 'linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)',
-            borderRadius: '20px',
+            borderRadius: '60px',
             transform: 'rotate(45deg)',
             position: 'relative',
             alignItems: 'center',
             justifyContent: 'center',
-            boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
           }}
         >
           <div 
             style={{
-              width: '45px',
-              height: '25px',
-              borderLeft: '12px solid white',
-              borderBottom: '12px solid white',
-              transform: 'rotate(-45deg) translate(8px, -8px)',
-              marginTop: '-5px',
+              width: '130px',
+              height: '70px',
+              borderLeft: '35px solid white',
+              borderBottom: '35px solid white',
+              transform: 'rotate(-45deg) translate(25px, -25px)',
+              marginTop: '-15px',
             }}
           />
         </div>
