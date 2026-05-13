@@ -306,6 +306,34 @@ export async function updateUserAction(id: string, data: any) {
   return result;
 }
 
+export async function updateSelfAction(data: any) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!user) throw new Error("Usuário não encontrado");
+
+  const updateData: any = {
+    name: data.name,
+    companyName: data.companyName,
+    phone: data.phone,
+    cpf: data.cpf,
+  };
+
+  if (data.password) {
+    updateData.password = await bcrypt.hash(data.password, 10);
+  }
+
+  const result = await prisma.user.update({
+    where: { id: user.id },
+    data: updateData
+  });
+
+  revalidatePath("/dashboard/profile");
+  
+  return result;
+}
+
 export async function deleteUserAction(id: string) {
   const session = await getServerSession(authOptions);
   if (!session?.user?.email) throw new Error("Não autorizado");
