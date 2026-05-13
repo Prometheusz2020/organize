@@ -18,6 +18,12 @@ export default function Dashboard() {
   const [showValues, setShowValues] = useState(false);
 
   useEffect(() => {
+    // Load preference from localStorage on mount
+    const savedPreference = localStorage.getItem("organize_show_values");
+    if (savedPreference !== null) {
+      setShowValues(savedPreference === "true");
+    }
+
     const fetchStats = async () => {
       try {
         const data = await getDashboardStats();
@@ -31,6 +37,12 @@ export default function Dashboard() {
 
     fetchStats();
   }, []);
+
+  const toggleShowValues = () => {
+    const newValue = !showValues;
+    setShowValues(newValue);
+    localStorage.setItem("organize_show_values", String(newValue));
+  };
 
   if (loading) {
     return (
@@ -66,7 +78,7 @@ export default function Dashboard() {
           </p>
         </div>
         <button 
-          onClick={() => setShowValues(!showValues)}
+          onClick={toggleShowValues}
           className="p-2 rounded-lg bg-slate-900 border border-slate-800 text-slate-400 hover:text-slate-50 transition-colors"
           title={showValues ? "Ocultar valores" : "Mostrar valores"}
         >
