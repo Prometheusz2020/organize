@@ -3,12 +3,14 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Clock, XCircle, DollarSign, Calendar, Edit2, Save } from "lucide-react";
+import { ArrowLeft, CheckCircle, Clock, XCircle, DollarSign, Calendar, Edit2, Save, MessageCircle } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getQuoteById, updateInstallmentAction, updateQuoteStatusAction } from "@/actions";
+import { useSession } from "next-auth/react";
 
 export default function QuoteDetails() {
+  const { data: session } = useSession();
   const router = useRouter();
   const params = useParams();
   const quoteId = params.id as string;
@@ -23,6 +25,42 @@ export default function QuoteDetails() {
   useEffect(() => {
     fetchQuote();
   }, [quoteId]);
+
+  const handleSendWhatsApp = () => {
+    if (!quote) return;
+
+    const companyName = (session?.user as any)?.companyName || "Nossa Empresa";
+    const phone = quote.client?.phone?.replace(/\D/g, "");
+    
+    if (!phone) {
+      alert("O cliente não possui um telefone cadastrado.");
+      return;
+    }
+
+    let message = `*ORÇAMENTO - ${companyName.toUpperCase()}*\n`;
+    message += `--------------------------\n`;
+    message += `*Cliente:* ${quote.client?.name}\n`;
+    message += `*Serviço:* ${quote.serviceType}\n`;
+    message += `*Data:* ${format(new Date(quote.date), "dd/MM/yyyy")}\n`;
+    message += `*Valor Total:* ${formatCurrency(quote.value)}\n\n`;
+    
+    message += `*Descrição:*\n${quote.description}\n\n`;
+    
+    message += `*Forma de Pagamento:* ${quote.paymentMethod}\n`;
+    
+    if (quote.installments && quote.installments.length > 0) {
+      message += `*Parcelamento:*\n`;
+      quote.installments.forEach((inst: any) => {
+        message += `- ${inst.number}ª Parcela: ${formatCurrency(inst.value)} (Vence em ${format(new Date(inst.dueDate), "dd/MM")})\n`;
+      });
+    }
+
+    message += `\n--------------------------\n`;
+    message += `Obrigado pela preferência! Ficamos no aguardo da sua aprovação.`;
+
+    const encodedMessage = encodeURIComponent(message);
+    window.open(`https://wa.me/55${phone}?text=${encodedMessage}`, "_blank");
+  };
 
   const fetchQuote = async () => {
     try {
@@ -160,6 +198,13 @@ export default function QuoteDetails() {
         </div>
         
         <div className="flex space-x-3">
+          <button
+            onClick={handleSendWhatsApp}
+            className="inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-emerald-500 transition-all"
+          >
+            <MessageCircle className="-ml-1 mr-2 h-5 w-5" />
+            Enviar WhatsApp
+          </button>
           <select
             value={quote.status}
             onChange={(e) => handleUpdateStatus(e.target.value)}
