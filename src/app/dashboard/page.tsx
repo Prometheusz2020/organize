@@ -15,7 +15,7 @@ export default function Dashboard() {
     totalAReceber: 0,
   });
   const [loading, setLoading] = useState(true);
-  const [showValues, setShowValues] = useState(true);
+  const [showValues, setShowValues] = useState(false);
 
   useEffect(() => {
     const fetchStats = async () => {
