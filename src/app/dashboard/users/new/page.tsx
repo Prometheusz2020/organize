@@ -34,8 +34,10 @@ export default function NewUserPage() {
 
     try {
       await createUserAction(formData);
-      router.push("/dashboard/users");
+      // Force a refresh of the users list before navigating
       router.refresh();
+      // Navigate back to the users list
+      router.push("/dashboard/users");
     } catch (err: any) {
       console.error("Error creating user:", err);
       setError(err.message || "Erro ao salvar o usuário. Tente novamente.");

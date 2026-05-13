@@ -66,8 +66,10 @@ export default function EditUserPage({ params }: { params: Promise<{ id: string 
       }
 
       await updateUserAction(id, updateData);
-      router.push("/dashboard/users");
+      // Force a refresh of the users list
       router.refresh();
+      // Navigate back
+      router.push("/dashboard/users");
     } catch (err: any) {
       console.error("Error updating user:", err);
       setError(err.message || "Erro ao atualizar o usuário. Tente novamente.");

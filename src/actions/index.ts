@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import bcrypt from "bcryptjs";
+import { revalidatePath } from "next/cache";
 
 export async function getDashboardStats() {
   const session = await getServerSession(authOptions);
@@ -261,7 +262,7 @@ export async function createUserAction(data: any) {
 
   const hashedPassword = await bcrypt.hash(data.password, 10);
 
-  return await prisma.user.create({
+  const result = await prisma.user.create({
     data: {
       email: data.email,
       password: hashedPassword,
@@ -273,6 +274,11 @@ export async function createUserAction(data: any) {
       licenseStatus: data.licenseStatus || "Ativo"
     }
   });
+
+  revalidatePath("/dashboard/users");
+  revalidatePath("/dashboard/admin");
+  
+  return result;
 }
 
 export async function updateUserAction(id: string, data: any) {
@@ -289,10 +295,15 @@ export async function updateUserAction(id: string, data: any) {
     updateData.password = await bcrypt.hash(data.password, 10);
   }
 
-  return await prisma.user.update({
+  const result = await prisma.user.update({
     where: { id },
     data: updateData
   });
+
+  revalidatePath("/dashboard/users");
+  revalidatePath("/dashboard/admin");
+
+  return result;
 }
 
 export async function deleteUserAction(id: string) {
@@ -307,9 +318,14 @@ export async function deleteUserAction(id: string) {
   // Prevent self-deletion
   if (currentUser.id === id) throw new Error("Você não pode excluir seu próprio usuário");
 
-  return await prisma.user.delete({
+  const result = await prisma.user.delete({
     where: { id }
   });
+
+  revalidatePath("/dashboard/users");
+  revalidatePath("/dashboard/admin");
+
+  return result;
 }
 
 export async function getAdminStats() {
