@@ -18,10 +18,19 @@ export default function Dashboard() {
   const [showValues, setShowValues] = useState(false);
 
   useEffect(() => {
-    // Load preference from localStorage on mount
+    // Load preference from localStorage on mount and check for expiration
     const savedPreference = localStorage.getItem("organize_show_values");
-    if (savedPreference !== null) {
-      setShowValues(savedPreference === "true");
+    const expiry = localStorage.getItem("organize_show_values_expiry");
+    const now = Date.now();
+
+    if (savedPreference !== null && expiry !== null) {
+      if (now < parseInt(expiry)) {
+        setShowValues(savedPreference === "true");
+      } else {
+        // Preference expired, clean up
+        localStorage.removeItem("organize_show_values");
+        localStorage.removeItem("organize_show_values_expiry");
+      }
     }
 
     const fetchStats = async () => {
@@ -41,7 +50,10 @@ export default function Dashboard() {
   const toggleShowValues = () => {
     const newValue = !showValues;
     setShowValues(newValue);
+    
+    // Save with 1 hour expiration (3600000 ms)
     localStorage.setItem("organize_show_values", String(newValue));
+    localStorage.setItem("organize_show_values_expiry", String(Date.now() + 3600000));
   };
 
   if (loading) {
