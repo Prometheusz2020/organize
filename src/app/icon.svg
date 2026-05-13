@@ -1,0 +1,18 @@
+<svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect 
+    x="50" 
+    y="10" 
+    width="56.57" 
+    height="56.57" 
+    rx="12" 
+    transform="rotate(45 50 10)" 
+    fill="#6366f1"
+  />
+  <path 
+    d="M38 52L46 60L62 44" 
+    stroke="white" 
+    stroke-width="6" 
+    stroke-linecap="round" 
+    stroke-linejoin="round" 
+  />
+</svg>

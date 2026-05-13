@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { Briefcase } from "lucide-react";
+import { Logo } from "@/components/Logos";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -43,7 +43,7 @@ export default function Login() {
         <div className="text-center">
           <div className="flex justify-center">
             <div className="bg-indigo-900/50 p-3 rounded-full ring-1 ring-indigo-500/30">
-              <Briefcase className="h-8 w-8 text-indigo-400" />
+              <Logo variant="diamond" size={32} className="text-indigo-400" />
             </div>
           </div>
           <h2 className="mt-6 text-3xl font-extrabold text-slate-50">

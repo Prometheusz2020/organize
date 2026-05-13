@@ -11,11 +11,11 @@ import {
   LogOut, 
   Menu, 
   X,
-  Briefcase,
   Calendar,
   DollarSign,
   ShieldCheck
 } from "lucide-react";
+import { Logo } from "@/components/Logos";
 
 export default function DashboardLayout({
   children,
@@ -74,7 +74,7 @@ export default function DashboardLayout({
           <div className="fixed inset-y-0 left-0 flex w-64 flex-col bg-slate-900 border-r border-slate-800">
             <div className="flex items-center justify-between h-16 px-4 border-b border-slate-800">
               <div className="flex items-center space-x-2">
-                <Briefcase className="h-6 w-6 text-indigo-400" />
+                <Logo variant="diamond" size={24} className="text-indigo-400" />
                 <span className="text-xl font-bold text-slate-50">Organize</span>
               </div>
               <button onClick={() => setSidebarOpen(false)}>
@@ -123,7 +123,7 @@ export default function DashboardLayout({
         <div className="flex w-64 flex-col bg-slate-900 border-r border-slate-800">
           <div className="flex items-center h-16 px-6 border-b border-slate-800">
             <div className="flex items-center space-x-2">
-              <Briefcase className="h-8 w-8 text-indigo-500" />
+              <Logo variant="diamond" size={32} className="text-indigo-500" />
               <span className="text-2xl font-bold text-slate-50 tracking-tight">Organize</span>
             </div>
           </div>
@@ -176,7 +176,7 @@ export default function DashboardLayout({
       <div className="flex flex-1 flex-col overflow-hidden">
         <div className="lg:hidden flex items-center justify-between h-16 px-4 bg-slate-900 border-b border-slate-800">
           <div className="flex items-center space-x-2">
-            <Briefcase className="h-6 w-6 text-indigo-500" />
+            <Logo variant="diamond" size={24} className="text-indigo-500" />
             <span className="text-xl font-bold text-slate-50">Organize</span>
           </div>
           <button

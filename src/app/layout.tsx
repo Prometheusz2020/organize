@@ -8,6 +8,10 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Organize - Sistema de Gestão",
   description: "Gestão de Clientes e Orçamentos",
+  icons: {
+    icon: "/icon.svg",
+  },
+  themeColor: "#020617",
 };
 
 export default function RootLayout({
