@@ -54,7 +54,7 @@ export async function POST(req: Request) {
               <p>Seu cadastro no sistema <strong>Organize</strong> foi realizado com sucesso.</p>
               <p>Para acessar o painel, clique no link abaixo e entre com seu e-mail e senha:</p>
               <br/>
-              <a href="${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/login" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold;">Acessar o Painel</a>
+              <a href="${process.env.NEXTAUTH_URL || 'https://organize.ztilabs.com.br'}/login" style="display: inline-block; padding: 12px 24px; background-color: #4F46E5; color: #fff; text-decoration: none; border-radius: 8px; font-weight: bold;">Acessar o Painel</a>
               <br/><br/>
               <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #4F46E5;">
                 <h3 style="margin-top: 0; color: #1f2937;">📱 Dica de Acesso pelo Celular</h3>
