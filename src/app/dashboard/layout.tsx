@@ -31,8 +31,15 @@ export default function DashboardLayout({
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login");
+    } else if (status === "authenticated" && session?.user) {
+      const user = session.user as any;
+      if (!user.name || !user.companyName) {
+        if (pathname !== "/dashboard/setup") {
+          router.push("/dashboard/setup");
+        }
+      }
     }
-  }, [status, router]);
+  }, [status, router, session, pathname]);
 
   if (status === "loading" || !session) {
     return (

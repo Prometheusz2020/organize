@@ -10,7 +10,6 @@ export default function Home() {
   const [formData, setFormData] = useState({
     email: "",
     phone: "",
-    password: "",
   });
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
@@ -38,10 +37,10 @@ export default function Home() {
       const data = await res.json();
 
       if (res.ok) {
-        setMessage("Cadastro realizado com sucesso! Verifique seu e-mail.");
+        setMessage("Cadastro inicial realizado! Verifique seu e-mail para a senha de acesso.");
         setTimeout(() => {
           router.push("/login");
-        }, 3000);
+        }, 5000);
       } else {
         setError(data.error || "Ocorreu um erro no cadastro.");
       }
@@ -119,7 +118,7 @@ export default function Home() {
             <div className="mb-8">
               <h2 className="text-2xl font-bold text-white mb-2">Crie sua conta</h2>
               <p className="text-sm text-slate-400">
-                Preencha os dados abaixo para se cadastrar. É rápido e fácil.
+                Preencha os dados abaixo. Você receberá a senha de acesso no seu e-mail.
               </p>
             </div>
 
@@ -152,22 +151,6 @@ export default function Home() {
                   onChange={handleChange}
                   className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
                   placeholder="(00) 00000-0000"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-1.5" htmlFor="password">
-                  Senha
-                </label>
-                <input
-                  type="password"
-                  id="password"
-                  name="password"
-                  required
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                  placeholder="••••••••"
                 />
               </div>
 
