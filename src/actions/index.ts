@@ -66,7 +66,12 @@ export async function getClients() {
 
   return await prisma.client.findMany({
     where: { userId: user.id },
-    orderBy: { name: 'asc' }
+    orderBy: { name: 'asc' },
+    include: {
+      _count: {
+        select: { quotes: true }
+      }
+    }
   });
 }
 
@@ -77,12 +82,49 @@ export async function createClient(data: any) {
   const user = await prisma.user.findUnique({ where: { email: session.user.email } });
   if (!user) throw new Error("Usuário não encontrado");
 
-  return await prisma.client.create({
+  const result = await prisma.client.create({
     data: {
       ...data,
       userId: user.id
     }
   });
+
+  revalidatePath("/dashboard/clients");
+  return result;
+}
+
+export async function getClientById(id: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!user) throw new Error("Usuário não encontrado");
+
+  return await prisma.client.findUnique({
+    where: { 
+      id,
+      userId: user.id 
+    }
+  });
+}
+
+export async function updateClient(id: string, data: any) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+
+  const user = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!user) throw new Error("Usuário não encontrado");
+
+  const result = await prisma.client.update({
+    where: { 
+      id,
+      userId: user.id 
+    },
+    data
+  });
+
+  revalidatePath("/dashboard/clients");
+  return result;
 }
 
 export async function getQuotes() {

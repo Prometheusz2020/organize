@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Plus, Search, MapPin, Phone, Mail, Users } from "lucide-react";
+import { Plus, Search, MapPin, Phone, Mail, Users, Pencil } from "lucide-react";
 import Link from "next/link";
 import { getClients } from "@/actions";
 
@@ -99,7 +99,14 @@ export default function ClientsList() {
               <li key={client.id} className="p-4 sm:px-6 hover:bg-slate-800/50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex flex-col">
-                    <p className="text-sm font-semibold text-slate-50">{client.name}</p>
+                    <div className="flex items-center gap-3">
+                      <p className="text-sm font-semibold text-slate-50">{client.name}</p>
+                      {client._count && client._count.quotes > 0 && (
+                        <span className="inline-flex items-center justify-center px-2 py-0.5 rounded text-xs font-medium bg-orange-500/10 text-orange-500 border border-orange-500/20" title={`${client._count.quotes} ${client._count.quotes === 1 ? 'orçamento' : 'orçamentos'}`}>
+                          {client._count.quotes} {client._count.quotes === 1 ? 'orçamento' : 'orçamentos'}
+                        </span>
+                      )}
+                    </div>
                     <div className="mt-1 flex flex-col sm:flex-row sm:flex-wrap sm:space-x-4">
                       {client.email && (
                         <div className="mt-2 flex items-center text-sm text-slate-400 sm:mt-0">
@@ -118,6 +125,15 @@ export default function ClientsList() {
                         </div>
                       )}
                     </div>
+                  </div>
+                  <div className="ml-4 flex-shrink-0">
+                    <Link
+                      href={`/dashboard/clients/${client.id}/edit`}
+                      className="inline-flex items-center p-2 border border-transparent rounded-full shadow-sm text-slate-400 hover:bg-slate-800 hover:text-indigo-400 focus:outline-none transition-colors"
+                      title="Editar cliente"
+                    >
+                      <Pencil className="h-5 w-5" aria-hidden="true" />
+                    </Link>
                   </div>
                 </div>
               </li>
