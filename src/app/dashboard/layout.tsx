@@ -71,6 +71,7 @@ export default function DashboardLayout({
   // I'll show it for now or check the session.
   if (isAdmin) {
     navigation.push({ name: "Painel Admin", href: "/dashboard/admin", icon: ShieldCheck });
+    navigation.push({ name: "Mensalidades", href: "/dashboard/subscriptions", icon: DollarSign });
   }
 
   return (

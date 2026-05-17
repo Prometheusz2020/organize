@@ -436,3 +436,118 @@ export async function getAdminStats() {
 export async function verifyPinAction(pin: string) {
   return pin === process.env.ADMIN_PIN;
 }
+
+export async function getSubscriptionPayments() {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+
+  const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!currentUser || currentUser.role !== "ADMIN") {
+    throw new Error("Acesso negado");
+  }
+
+  return await prisma.subscriptionPayment.findMany({
+    orderBy: { createdAt: 'desc' },
+    include: {
+      user: {
+        select: {
+          name: true,
+          companyName: true,
+          email: true
+        }
+      }
+    }
+  });
+}
+
+export async function getSubscriptionPaymentById(id: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+
+  const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!currentUser || currentUser.role !== "ADMIN") {
+    throw new Error("Acesso negado");
+  }
+
+  return await prisma.subscriptionPayment.findUnique({
+    where: { id },
+    include: {
+      user: {
+        select: {
+          name: true,
+          companyName: true,
+          email: true
+        }
+      }
+    }
+  });
+}
+
+export async function createSubscriptionPayment(data: any) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+
+  const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!currentUser || currentUser.role !== "ADMIN") {
+    throw new Error("Acesso negado");
+  }
+
+  const result = await prisma.subscriptionPayment.create({
+    data: {
+      userId: data.userId,
+      amount: parseFloat(data.amount),
+      dueDate: data.dueDate,
+      referenceMonth: data.referenceMonth,
+      status: data.status || "Pendente",
+      paidAt: data.status === "Pago" ? new Date() : null
+    }
+  });
+
+  revalidatePath("/dashboard/subscriptions");
+  return result;
+}
+
+export async function updateSubscriptionPayment(id: string, data: any) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+
+  const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!currentUser || currentUser.role !== "ADMIN") {
+    throw new Error("Acesso negado");
+  }
+
+  const updateData: any = { ...data };
+  if (data.status === "Pago") {
+    updateData.paidAt = new Date();
+  } else if (data.status === "Pendente" || data.status === "Atrasado") {
+    updateData.paidAt = null;
+  }
+  if (data.amount !== undefined) {
+    updateData.amount = parseFloat(data.amount);
+  }
+
+  const result = await prisma.subscriptionPayment.update({
+    where: { id },
+    data: updateData
+  });
+
+  revalidatePath("/dashboard/subscriptions");
+  return result;
+}
+
+export async function deleteSubscriptionPayment(id: string) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.email) throw new Error("Não autorizado");
+
+  const currentUser = await prisma.user.findUnique({ where: { email: session.user.email } });
+  if (!currentUser || currentUser.role !== "ADMIN") {
+    throw new Error("Acesso negado");
+  }
+
+  const result = await prisma.subscriptionPayment.delete({
+    where: { id }
+  });
+
+  revalidatePath("/dashboard/subscriptions");
+  return result;
+}
