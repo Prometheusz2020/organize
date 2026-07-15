@@ -12,7 +12,8 @@ import {
   Search,
   CheckCircle,
   XCircle,
-  Clock
+  Clock,
+  FileText
 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
@@ -160,6 +161,7 @@ export default function UsersPage() {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Usuário / Empresa</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Contato / CPF</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Cargo</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Orçamentos</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Licença</th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-400 uppercase tracking-wider">Criado em</th>
                     <th scope="col" className="relative px-6 py-3"><span className="sr-only">Ações</span></th>
@@ -193,6 +195,16 @@ export default function UsersPage() {
                           <Shield className="mr-1 h-3 w-3" />
                           {user.role}
                         </span>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {user.role === "ADMIN" ? (
+                          <span className="text-xs text-slate-500">-</span>
+                        ) : (
+                          <div className="flex items-center text-xs text-slate-300 font-semibold bg-slate-950/40 border border-slate-800 rounded-md px-2.5 py-1 w-max">
+                            <FileText className="mr-1.5 h-3.5 w-3.5 text-indigo-400" />
+                            {user._count?.quotes ?? 0}
+                          </div>
+                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center space-x-2">

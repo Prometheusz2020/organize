@@ -10,7 +10,8 @@ import {
   ArrowRight,
   TrendingUp,
   Activity,
-  Clock
+  Clock,
+  FileText
 } from "lucide-react";
 import Link from "next/link";
 import { getAdminStats } from "@/actions";
@@ -161,7 +162,14 @@ export default function AdminDashboard() {
                         </div>
                         <div>
                           <p className="text-sm font-bold text-slate-50">{user.name || "Sem nome"}</p>
-                          <p className="text-xs text-slate-500">{user.companyName || "Empresa não informada"}</p>
+                          <div className="flex items-center space-x-2 text-xs text-slate-500 mt-0.5">
+                            <span>{user.companyName || "Empresa não informada"}</span>
+                            <span className="text-slate-700">•</span>
+                            <span className="flex items-center text-indigo-400 font-semibold">
+                              <FileText className="h-3 w-3 mr-1" />
+                              {user._count?.quotes ?? 0} {user._count?.quotes === 1 ? "orçamento" : "orçamentos"}
+                            </span>
+                          </div>
                         </div>
                       </div>
                       <div className="text-right">

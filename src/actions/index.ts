@@ -262,7 +262,12 @@ export async function getUsers() {
       cpf: true,
       role: true,
       licenseStatus: true,
-      createdAt: true
+      createdAt: true,
+      _count: {
+        select: {
+          quotes: true
+        }
+      }
     }
   });
 }
@@ -420,7 +425,12 @@ export async function getAdminStats() {
       name: true,
       companyName: true,
       licenseStatus: true,
-      createdAt: true
+      createdAt: true,
+      _count: {
+        select: {
+          quotes: true
+        }
+      }
     }
   });
 
