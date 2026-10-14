@@ -145,22 +145,22 @@ export default function PublicQuotePage() {
     const margin = 14;
     const contentW = pageW - margin * 2;
 
+    doc.setFillColor(248, 250, 252);
+    doc.rect(0, 0, pageW, 297, "F");
+
     doc.setFillColor(15, 23, 42);
-    doc.rect(0, 0, pageW, 15, "F");
-    doc.setTextColor(148, 163, 184);
-    doc.setFontSize(8);
-    doc.setFont("helvetica", "normal");
-    doc.text(companyName.toUpperCase(), pageW - margin, 10, { align: "right" });
+    doc.rect(0, 0, pageW, 36, "F");
 
     doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
     doc.setFont("helvetica", "bold");
-    doc.text("ORÇAMENTO", margin, 23);
+    doc.setFontSize(24);
+    doc.text("ORÇAMENTO", margin, 22);
 
-    doc.setTextColor(148, 163, 184);
-    doc.setFontSize(8.5);
     doc.setFont("helvetica", "normal");
-    doc.text(`Emitido em ${format(new Date(quote.createdAt), "dd/MM/yyyy")}`, pageW - margin, 28, { align: "right" });
+    doc.setFontSize(8);
+    doc.setTextColor(148, 163, 184);
+    doc.text(companyName.toUpperCase(), pageW - margin, 16, { align: "right" });
+    doc.text(`Emitido em ${format(new Date(quote.createdAt), "dd/MM/yyyy")}`, pageW - margin, 22, { align: "right" });
 
     const statusColors: Record<string, [number, number, number]> = {
       Aprovado: [16, 185, 129],
@@ -176,7 +176,7 @@ export default function PublicQuotePage() {
     doc.setFont("helvetica", "bold");
     doc.text(quote.status.toUpperCase(), pageW - 33, 15.5, { align: "center" });
 
-    let y = 40;
+    let y = 48;
     const cards = [
       { label: "CLIENTE", value: quote.client?.name || "—" },
       { label: "TELEFONE", value: quote.client?.phone || "Não informado" },
@@ -187,57 +187,64 @@ export default function PublicQuotePage() {
     const cardW = (contentW - 6) / cards.length;
     cards.forEach((card, index) => {
       const x = margin + index * (cardW + 2);
-      doc.setFillColor(241, 245, 249);
-      doc.roundedRect(x, y, cardW, 26, 2, 2, "F");
+      doc.setFillColor(255, 255, 255);
+      doc.roundedRect(x, y, cardW, 28, 2, 2, "F");
+      doc.setDrawColor(226, 232, 240);
+      doc.setLineWidth(0.2);
+      doc.roundedRect(x, y, cardW, 28, 2, 2, "S");
+      doc.setDrawColor(99, 102, 241);
       doc.setFillColor(99, 102, 241);
-      doc.rect(x, y, 2, 26, "F");
+      doc.rect(x, y, 2, 28, "F");
+
       doc.setFontSize(7);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(100, 116, 139);
       doc.text(card.label, x + 5, y + 8);
+
       doc.setFontSize(card.label === "VALOR TOTAL" ? 10 : 8.5);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(
-        card.label === "VALOR TOTAL" ? 79 : 15,
-        card.label === "VALOR TOTAL" ? 70 : 23,
-        card.label === "VALOR TOTAL" ? 229 : 42
-      );
+      doc.setTextColor(card.label === "VALOR TOTAL" ? 79 : 15, card.label === "VALOR TOTAL" ? 70 : 23, card.label === "VALOR TOTAL" ? 229 : 42);
       const split = doc.splitTextToSize(card.value, cardW - 8);
-      doc.text(split, x + 5, y + 15);
+      doc.text(split, x + 5, y + 16);
     });
 
-    y += 40;
+    y += 38;
 
     doc.setFillColor(15, 23, 42);
-    doc.roundedRect(margin, y, contentW, 8, 1, 1, "F");
+    doc.roundedRect(margin, y, contentW, 8, 1.5, 1.5, "F");
     doc.setFontSize(8);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(255, 255, 255);
     doc.text("DETALHES DO SERVIÇO", margin + 4, y + 5.5);
-    y += 14;
+    y += 12;
+
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(margin, y, contentW, 30, 2, 2, "F");
+    doc.setDrawColor(226, 232, 240);
+    doc.setLineWidth(0.2);
+    doc.roundedRect(margin, y, contentW, 30, 2, 2, "S");
 
     doc.setFont("helvetica", "bold");
-    doc.setFontSize(9);
+    doc.setFontSize(8.5);
     doc.setTextColor(15, 23, 42);
-    doc.text("Tipo de Serviço:", margin, y);
+    doc.text("Tipo de serviço", margin + 5, y + 7);
     doc.setFont("helvetica", "normal");
+    doc.setFontSize(8.5);
     doc.setTextColor(51, 65, 85);
-    doc.text(quote.serviceType, margin + 45, y);
-    y += 8;
+    doc.text(quote.serviceType, margin + 46, y + 7);
 
     doc.setFont("helvetica", "bold");
     doc.setTextColor(15, 23, 42);
-    doc.text("Descrição:", margin, y);
-    y += 6;
+    doc.text("Descrição", margin + 5, y + 17);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(51, 65, 85);
-    const splitDescription = doc.splitTextToSize(quote.description || "Sem descrição informada.", contentW);
-    doc.text(splitDescription, margin, y);
-    y += splitDescription.length * 5 + 8;
+    const splitDescription = doc.splitTextToSize(quote.description || "Sem descrição informada.", contentW - 12);
+    doc.text(splitDescription, margin + 5, y + 23);
+    y += 38;
 
     if (quote.installments?.length) {
       doc.setFillColor(15, 23, 42);
-      doc.roundedRect(margin, y, contentW, 8, 1, 1, "F");
+      doc.roundedRect(margin, y, contentW, 8, 1.5, 1.5, "F");
       doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(255, 255, 255);
@@ -291,10 +298,11 @@ export default function PublicQuotePage() {
     doc.text("VALOR TOTAL DO ORÇAMENTO", margin + 5, y + 11);
     doc.setFontSize(14);
     doc.setFont("helvetica", "bold");
+    doc.setTextColor(15, 23, 42);
     doc.text(formatCurrency(quote.value), pageW - margin, y + 11, { align: "right" });
 
-    if (y < 240) {
-      const sigY = Math.max(y + 22, 240);
+    if (y < 245) {
+      const sigY = Math.max(y + 18, 245);
       doc.setDrawColor(203, 213, 225);
       doc.setLineWidth(0.3);
       doc.line(margin, sigY, margin + 65, sigY);
@@ -310,7 +318,7 @@ export default function PublicQuotePage() {
 
     doc.setFillColor(15, 23, 42);
     doc.rect(0, 282, pageW, 15, "F");
-    doc.setFontSize(7.5);
+    doc.setFontSize(7.2);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(148, 163, 184);
     doc.text(`Documento gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")} · ${companyName}`, margin, 289);
