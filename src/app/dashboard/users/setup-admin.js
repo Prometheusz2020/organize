@@ -3,13 +3,13 @@ const bcrypt = require("bcryptjs");
 const prisma = new PrismaClient();
 
 async function main() {
-  const email = "admin@organize.com"; // Você pode mudar isso depois
-  const password = "admin123"; // Mude imediatamente após o primeiro login!
+  const email = "admin@organize.com";
+  const password = "admin123";
+  const hashedPassword = await bcrypt.hash(password, 10);
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
 
   if (!existingUser) {
-    const hashedPassword = await bcrypt.hash(password, 10);
     const user = await prisma.user.create({
       data: {
         email,
@@ -20,15 +20,17 @@ async function main() {
         licenseStatus: "Ativo"
       }
     });
-    console.log(`Sucesso! Usuário administrador criado:`);
-    console.log(`Email: ${email}`);
-    console.log(`Senha: ${password}`);
+    console.log(`Sucesso! Usuário administrador criado: ${email}`);
   } else {
     await prisma.user.update({
       where: { email },
-      data: { role: "ADMIN", licenseStatus: "Ativo" }
+      data: {
+        password: hashedPassword,
+        role: "ADMIN",
+        licenseStatus: "Ativo"
+      }
     });
-    console.log(`Usuário ${email} já existia e foi promovido a ADMIN.`);
+    console.log(`Usuário ${email} atualizado com senha resetada para ${password}.`);
   }
 }
 

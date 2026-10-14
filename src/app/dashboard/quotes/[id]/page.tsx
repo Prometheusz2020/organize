@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, CheckCircle, Clock, XCircle, DollarSign, Calendar, Edit2, Save, MessageCircle, FileText } from "lucide-react";
+import { ArrowLeft, CheckCircle, Clock, XCircle, DollarSign, Calendar, Edit2, Save, MessageCircle, FileText, Link2, Copy } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { getQuoteById, updateInstallmentAction, updateQuoteStatusAction } from "@/actions";
@@ -23,137 +23,267 @@ export default function QuoteDetails() {
   
   const [editingInstallment, setEditingInstallment] = useState<string | null>(null);
   const [editData, setEditData] = useState<{ dueDate: string; status: string }>({ dueDate: "", status: "" });
+  const [linkCopied, setLinkCopied] = useState(false);
 
-  useEffect(() => {
-    fetchQuote();
-  }, [quoteId]);
+  const handleCopyLink = () => {
+    const publicLink = `${window.location.origin}/orcamento/${quoteId}`;
+    navigator.clipboard.writeText(publicLink).then(() => {
+      setLinkCopied(true);
+      setTimeout(() => setLinkCopied(false), 2000);
+    });
+  };
 
+  
+
+  // ─── Shared PDF builder ───────────────────────────────────────────────────
+  const buildPDF = (): jsPDF => {
+    const doc = new jsPDF({ unit: "mm", format: "a4" });
+    const companyName = (session?.user as any)?.companyName || "Nossa Empresa";
+    const pageW = 210;
+    const margin = 20;
+    const contentW = pageW - margin * 2;
+
+    // ── Thin top accent line ────────────────────────────────────────────────
+    doc.setFillColor(30, 30, 30);
+    doc.rect(0, 0, pageW, 1.5, "F");
+
+    // ── Header: title + company ─────────────────────────────────────────────
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(22);
+    doc.setTextColor(20, 20, 20);
+    doc.text("ORÇAMENTO", margin, 22);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(120, 120, 120);
+    doc.text(companyName.toUpperCase(), pageW - margin, 14, { align: "right" });
+    doc.text(
+      `Emitido em ${format(new Date(), "dd/MM/yyyy")}`,
+      pageW - margin,
+      20,
+      { align: "right" }
+    );
+
+    // Status (plain text, no badge)
+    const statusLabel =
+      quote.status === "Aprovado"
+        ? "✓ Aprovado"
+        : quote.status === "Rejeitado"
+        ? "✗ Rejeitado"
+        : "● Pendente";
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(80, 80, 80);
+    doc.text(statusLabel, pageW - margin, 26, { align: "right" });
+
+    // ── Divider ─────────────────────────────────────────────────────────────
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.line(margin, 30, pageW - margin, 30);
+
+    // ── Summary: 4-column data grid ─────────────────────────────────────────
+    let y = 40;
+    const cols = [
+      { label: "Cliente", value: quote.client?.name || "—" },
+      { label: "Telefone", value: quote.client?.phone || "—" },
+      { label: "Forma de Pagamento", value: quote.paymentMethod || "À vista" },
+      {
+        label: "Data de Execução",
+        value: quote.date ? format(new Date(quote.date), "dd/MM/yyyy") : "—",
+      },
+    ];
+    const colW = contentW / cols.length;
+    cols.forEach((col, i) => {
+      const x = margin + i * colW;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(140, 140, 140);
+      doc.text(col.label.toUpperCase(), x, y);
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(9);
+      doc.setTextColor(20, 20, 20);
+      const split = doc.splitTextToSize(col.value, colW - 4);
+      doc.text(split, x, y + 6);
+    });
+
+    y += 22;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, pageW - margin, y);
+
+    // ── Service type ────────────────────────────────────────────────────────
+    y += 10;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(140, 140, 140);
+    doc.text("TIPO DE SERVIÇO", margin, y);
+    y += 6;
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(10);
+    doc.setTextColor(20, 20, 20);
+    doc.text(quote.serviceType, margin, y);
+
+    // ── Description ─────────────────────────────────────────────────────────
+    y += 10;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7);
+    doc.setTextColor(140, 140, 140);
+    doc.text("DESCRIÇÃO", margin, y);
+    y += 6;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(50, 50, 50);
+    const splitDesc = doc.splitTextToSize(quote.description || "", contentW);
+    doc.text(splitDesc, margin, y);
+    y += splitDesc.length * 5 + 10;
+
+    // ── Installments table ──────────────────────────────────────────────────
+    if (quote.installments && quote.installments.length > 0) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7);
+      doc.setTextColor(140, 140, 140);
+      doc.text("PARCELAMENTO", margin, y);
+      y += 4;
+
+      const tableData = quote.installments.map((inst: any) => [
+        `${inst.number}ª parcela`,
+        format(new Date(inst.dueDate), "dd/MM/yyyy"),
+        formatCurrency(inst.value),
+        inst.status,
+      ]);
+
+      (doc as any).autoTable({
+        startY: y,
+        margin: { left: margin, right: margin },
+        head: [["Parcela", "Vencimento", "Valor", "Status"]],
+        body: tableData,
+        theme: "plain",
+        headStyles: {
+          fillColor: false,
+          textColor: [80, 80, 80],
+          fontStyle: "bold",
+          fontSize: 8,
+          cellPadding: { top: 3, bottom: 3, left: 2, right: 2 },
+          lineWidth: { bottom: 0.3 },
+          lineColor: [180, 180, 180],
+        },
+        bodyStyles: {
+          fontSize: 8,
+          cellPadding: { top: 3, bottom: 3, left: 2, right: 2 },
+          textColor: [40, 40, 40],
+          lineWidth: { bottom: 0.2 },
+          lineColor: [220, 220, 220],
+        },
+        alternateRowStyles: { fillColor: false },
+        columnStyles: {
+          0: { cellWidth: 45 },
+          2: { halign: "right" },
+          3: { halign: "center", textColor: [80, 80, 80] },
+        },
+      });
+      y = (doc as any).lastAutoTable.finalY + 8;
+    }
+
+    // ── Total ───────────────────────────────────────────────────────────────
+    doc.setDrawColor(180, 180, 180);
+    doc.setLineWidth(0.3);
+    doc.line(margin, y, pageW - margin, y);
+    y += 8;
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.setTextColor(80, 80, 80);
+    doc.text("Valor Total do Orçamento", margin, y);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.setTextColor(20, 20, 20);
+    doc.text(formatCurrency(quote.value), pageW - margin, y, { align: "right" });
+    y += 6;
+    doc.setDrawColor(30, 30, 30);
+    doc.setLineWidth(0.5);
+    doc.line(margin, y, pageW - margin, y);
+
+    // ── Signature lines ─────────────────────────────────────────────────────
+    if (y < 235) {
+      const sigY = Math.max(y + 18, 240);
+      doc.setDrawColor(180, 180, 180);
+      doc.setLineWidth(0.3);
+      doc.line(margin, sigY, margin + 65, sigY);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(7.5);
+      doc.setTextColor(140, 140, 140);
+      doc.text("Assinatura do Cliente", margin, sigY + 5);
+      doc.text(quote.client?.name || "", margin, sigY + 10);
+      doc.line(pageW - margin - 65, sigY, pageW - margin, sigY);
+      doc.text("Assinatura / Responsável", pageW - margin - 65, sigY + 5);
+      doc.text(companyName, pageW - margin - 65, sigY + 10);
+    }
+
+    // ── Footer ──────────────────────────────────────────────────────────────
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.3);
+    doc.line(margin, 280, pageW - margin, 280);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(7.5);
+    doc.setTextColor(160, 160, 160);
+    doc.text(
+      `Gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")} · ${companyName}`,
+      margin,
+      285
+    );
+    doc.text("Obrigado pela preferência!", pageW - margin, 285, {
+      align: "right",
+    });
+
+    return doc;
+  };
+
+  // ─── Download PDF only ────────────────────────────────────────────────────
+
+
+  const handleGeneratePDF = () => {
+    if (!quote) return;
+    const doc = buildPDF();
+    doc.save(`Orcamento_${(quote.client?.name || "cliente").replace(/\s+/g, "_")}.pdf`);
+  };
+
+  // ─── WhatsApp com link público ────────────────────────────────────────────
   const handleSendWhatsApp = () => {
     if (!quote) return;
 
     const companyName = (session?.user as any)?.companyName || "Nossa Empresa";
     const phone = quote.client?.phone?.replace(/\D/g, "");
-    
+
     if (!phone) {
       alert("O cliente não possui um telefone cadastrado.");
       return;
     }
 
+    // Link público único do orçamento
+    const baseUrl = window.location.origin;
+    const publicLink = `${baseUrl}/orcamento/${quoteId}`;
+
     let message = `*ORÇAMENTO - ${companyName.toUpperCase()}*\n`;
-    message += `--------------------------\n`;
-    message += `*Cliente:* ${quote.client?.name}\n`;
-    message += `*Serviço:* ${quote.serviceType}\n`;
-    message += `*Data:* ${format(new Date(quote.date), "dd/MM/yyyy")}\n`;
-    message += `*Valor Total:* ${formatCurrency(quote.value)}\n\n`;
-    
-    message += `*Descrição:*\n${quote.description}\n\n`;
-    
-    message += `*Forma de Pagamento:* ${quote.paymentMethod}\n`;
-    
+    message += `━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `📋 *Cliente:* ${quote.client?.name}\n`;
+    message += `🔧 *Serviço:* ${quote.serviceType}\n`;
+    message += `📅 *Data de Execução:* ${format(new Date(quote.date), "dd/MM/yyyy")}\n`;
+    message += `💰 *Valor Total:* ${formatCurrency(quote.value)}\n`;
+    message += `💳 *Pagamento:* ${quote.paymentMethod || "À vista"}\n`;
+
     if (quote.installments && quote.installments.length > 0) {
-      message += `*Parcelamento:*\n`;
+      message += `\n📦 *Parcelamento:*\n`;
       quote.installments.forEach((inst: any) => {
-        message += `- ${inst.number}ª Parcela: ${formatCurrency(inst.value)} (Vence em ${format(new Date(inst.dueDate), "dd/MM")})\n`;
+        message += `  • ${inst.number}ª parcela: ${formatCurrency(inst.value)} — vence ${format(new Date(inst.dueDate), "dd/MM/yyyy")}\n`;
       });
     }
 
-    message += `\n--------------------------\n`;
-    message += `Obrigado pela preferência! Ficamos no aguardo da sua aprovação.`;
+    message += `\n━━━━━━━━━━━━━━━━━━━━━━━━━━\n`;
+    message += `🔗 *Visualize e baixe o orçamento completo em PDF pelo link:*\n`;
+    message += `${publicLink}\n\n`;
+    message += `Ficamos no aguardo da sua aprovação. Obrigado! 🙏`;
 
     const encodedMessage = encodeURIComponent(message);
     window.open(`https://wa.me/55${phone}?text=${encodedMessage}`, "_blank");
-  };
-
-  const handleGeneratePDF = () => {
-    if (!quote) return;
-
-    const doc = new jsPDF();
-    const companyName = (session?.user as any)?.companyName || "Nossa Empresa";
-    
-    // Header
-    doc.setFillColor(79, 70, 229); // Indigo-600
-    doc.rect(0, 0, 210, 40, 'F');
-    
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(24);
-    doc.setFont("helvetica", "bold");
-    doc.text("ORÇAMENTO", 20, 25);
-    
-    doc.setFontSize(12);
-    doc.text(companyName.toUpperCase(), 140, 25);
-    
-    // Client Info
-    doc.setTextColor(0, 0, 0);
-    doc.setFontSize(14);
-    doc.text("DADOS DO CLIENTE", 20, 55);
-    doc.setLineWidth(0.5);
-    doc.line(20, 57, 190, 57);
-    
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Cliente: ${quote.client?.name}`, 20, 65);
-    doc.text(`Telefone: ${quote.client?.phone || 'Não informado'}`, 20, 72);
-    doc.text(`CPF: ${quote.client?.cpf || 'Não informado'}`, 20, 79);
-    
-    // Service Info
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("DETALHES DO SERVIÇO", 20, 95);
-    doc.line(20, 97, 190, 97);
-    
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Tipo de Serviço: ${quote.serviceType}`, 20, 105);
-    doc.text(`Data de Execução: ${format(new Date(quote.date), "dd/MM/yyyy")}`, 20, 112);
-    doc.text(`Forma de Pagamento: ${quote.paymentMethod}`, 20, 119);
-    
-    doc.setFontSize(11);
-    doc.setFont("helvetica", "bold");
-    doc.text("Descrição:", 20, 130);
-    doc.setFont("helvetica", "normal");
-    const splitDescription = doc.splitTextToSize(quote.description, 170);
-    doc.text(splitDescription, 20, 137);
-    
-    const descriptionHeight = splitDescription.length * 7;
-    let nextY = 137 + descriptionHeight + 10;
-    
-    // Installments Table
-    if (quote.installments && quote.installments.length > 0) {
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.text("PARCELAMENTO", 20, nextY);
-      doc.line(20, nextY + 2, 190, nextY + 2);
-      
-      const tableData = quote.installments.map((inst: any) => [
-        `${inst.number}ª Parcela`,
-        format(new Date(inst.dueDate), "dd/MM/yyyy"),
-        formatCurrency(inst.value)
-      ]);
-      
-      (doc as any).autoTable({
-        startY: nextY + 5,
-        head: [['Parcela', 'Vencimento', 'Valor']],
-        body: tableData,
-        theme: 'striped',
-        headStyles: { fillColor: [79, 70, 229] }
-      });
-      
-      nextY = (doc as any).lastAutoTable.finalY + 15;
-    }
-    
-    // Total
-    doc.setFontSize(16);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(79, 70, 229);
-    doc.text(`VALOR TOTAL: ${formatCurrency(quote.value)}`, 20, nextY);
-    
-    // Footer
-    doc.setFontSize(9);
-    doc.setTextColor(150, 150, 150);
-    doc.text(`Gerado em ${format(new Date(), "dd/MM/yyyy 'às' HH:mm")}`, 20, 285);
-    doc.text("Obrigado pela preferência!", 150, 285);
-
-    doc.save(`Orcamento_${quote.client?.name.replace(/\s+/g, '_')}.pdf`);
   };
 
   const fetchQuote = async () => {
@@ -171,6 +301,9 @@ export default function QuoteDetails() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    fetchQuote();
+  }, [quoteId]);
 
   const handleUpdateStatus = async (newStatus: string) => {
     try {
@@ -295,6 +428,17 @@ export default function QuoteDetails() {
         
         <div className="flex items-center space-x-2 sm:space-x-3">
           <button
+            onClick={handleCopyLink}
+            className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-lg bg-slate-800 px-3 py-2.5 text-sm font-bold text-slate-300 border border-slate-700 shadow-sm hover:bg-slate-700 hover:text-slate-50 transition-all active:scale-95"
+            title="Copiar link público do orçamento"
+          >
+            {linkCopied ? (
+              <><Copy className="-ml-0.5 mr-1.5 h-4 w-4 text-emerald-400" /><span className="text-emerald-400">Copiado!</span></>
+            ) : (
+              <><Link2 className="-ml-0.5 mr-1.5 h-4 w-4" />Link Público</>
+            )}
+          </button>
+          <button
             onClick={handleGeneratePDF}
             className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-lg bg-slate-800 px-4 py-2.5 text-sm font-bold text-slate-300 border border-slate-700 shadow-sm hover:bg-slate-700 hover:text-slate-50 transition-all active:scale-95"
             title="Baixar Orçamento em PDF"
@@ -305,6 +449,7 @@ export default function QuoteDetails() {
           <button
             onClick={handleSendWhatsApp}
             className="flex-1 sm:flex-none inline-flex items-center justify-center rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white shadow-lg hover:bg-emerald-500 transition-all active:scale-95"
+            title="Enviar link do orçamento pelo WhatsApp"
           >
             <MessageCircle className="-ml-1 mr-2 h-5 w-5" />
             WhatsApp
